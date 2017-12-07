@@ -1,3 +1,5 @@
+vmux_plugin_directory=$(dirname $0)
+
 vmux() {
   if [ $# -gt 1 ] && [ "$1" = attach ]
   then
@@ -12,7 +14,7 @@ vmux() {
   fi
 }
 
-alias vmux_send=~/.config/nvim/send_command_to_vim_session.py
+alias vmux_send="$vmux_plugin_directory"/send_command_to_vim_session.py
 
 for cmd in split vsplit e tabnew
 do
