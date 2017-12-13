@@ -34,8 +34,11 @@ do
   alias $cmd="vmux_send :$cmd"
 done
 
-alias rsplit="vmux_send 'winc l|split '"
-alias lsplit="vmux_send 'winc t|split '"
+for cmd in split e
+do
+  alias r$cmd="vmux_send 'winc l|$cmd '"
+  alias l$cmd="vmux_send 'winc t|$cmd '"
+done
 
 cd() {  
   builtin cd "$@";
