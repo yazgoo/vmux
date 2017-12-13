@@ -34,6 +34,9 @@ do
   alias $cmd="vmux_send :$cmd"
 done
 
+alias rsplit="vmux_send 'winc l|split '"
+alias lsplit="vmux_send 'winc t|split '"
+
 cd() {  
   builtin cd "$@";
   vmux_send :cd "$@"
