@@ -46,6 +46,6 @@ export EDITOR=editor
 
 cd() {  
   builtin cd "$@";
-  vmux_send :cd "$@"
+  vmux_send :cd "$PWD"
   echo "$PWD" > ~/.cwd;
 }
