@@ -30,13 +30,6 @@ export PATH="$PATH:$vmux_plugin_directory"
 export EDITOR=editor
 
 
-for cmd in split e
-do
-  alias r$cmd="vmux_send 'winc l|$cmd '"
-  alias l$cmd="vmux_send 'winc t|$cmd '"
-done
-
-
 cd() {  
   builtin cd "$@";
   vmux_send :cd "$PWD"

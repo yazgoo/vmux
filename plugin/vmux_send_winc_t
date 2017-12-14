@@ -1,0 +1,2 @@
+caller=$(basename $0)
+vmux_send "winc t|${caller:1} $@"
