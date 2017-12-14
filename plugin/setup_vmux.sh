@@ -25,9 +25,10 @@ then
   }
   return
 fi
-vmux_plugin_directory=$(dirname $0)
+export PATH="$PATH:$vmux_plugin_directory"
+export EDITOR=editor
 
-alias vmux_send="$vmux_plugin_directory"/send_command_to_vim_session.py
+vmux_plugin_directory=$(dirname $0)
 
 for cmd in split vsplit e tabnew
 do
@@ -39,9 +40,6 @@ do
   alias r$cmd="vmux_send 'winc l|$cmd '"
   alias l$cmd="vmux_send 'winc t|$cmd '"
 done
-
-export PATH="$PATH:$vmux_plugin_directory"
-export EDITOR=editor
 
 
 cd() {  

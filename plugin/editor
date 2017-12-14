@@ -1,4 +1,4 @@
 echo openinig "$@"
 echo press enter when done
-$(dirname $(which $0))/send_command_to_vim_session.py 'winc l|split '"$@"
+vmux_send 'winc l|split '"$@"
 read
