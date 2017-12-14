@@ -1,0 +1,1 @@
+vmux_send :$(basename $0) "$@"

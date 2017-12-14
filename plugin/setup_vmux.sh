@@ -25,15 +25,10 @@ then
   }
   return
 fi
+vmux_plugin_directory=$(dirname "$0")
 export PATH="$PATH:$vmux_plugin_directory"
 export EDITOR=editor
 
-vmux_plugin_directory=$(dirname $0)
-
-for cmd in split vsplit e tabnew
-do
-  alias $cmd="vmux_send :$cmd"
-done
 
 for cmd in split e
 do
