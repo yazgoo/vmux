@@ -40,6 +40,10 @@ do
   alias l$cmd="vmux_send 'winc t|$cmd '"
 done
 
+export PATH="$PATH:$vmux_plugin_directory"
+export EDITOR=editor
+
+
 cd() {  
   builtin cd "$@";
   vmux_send :cd "$@"
