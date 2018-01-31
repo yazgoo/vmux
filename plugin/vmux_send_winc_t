@@ -1,2 +1,4 @@
 caller=$(basename $0)
+# make sure the shell and vim working directory are aligned
+vmux_send :cd $PWD
 vmux_send "winc t|${caller:1} $@"
