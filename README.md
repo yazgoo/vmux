@@ -34,3 +34,17 @@ Run `:help vmux` from within vim for more in depth help.
 # detaching
 
 You can detach from the session with ^g
+
+# customizing
+
+Having a nice tabbar (based on [Caagr98/c98tabbar.vim](https://github.com/Caagr98/c98tabbar.vim)):
+
+```
+Plug 'git@github.com:yazgoo/c98tabbar.vim'
+Plug 'yazgoo/vmux-c98tabbar'
+```
+
+Leave terminal insert mode by typing `jj`: 
+```
+tnoremap jj <C-\><C-n>
+```
