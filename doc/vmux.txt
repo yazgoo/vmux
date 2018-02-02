@@ -1,0 +1,50 @@
+*vmux.txt* Helper to use neovim as a terminal multiplexer
+
+                       __   ___ __ ___  _   ___  __
+                       \ \ / / '_ ` _ \| | | \ \/ /
+                        \ V /| | | | | | |_| |>  < 
+                         \_/ |_| |_| |_|\__,_/_/\_\
+                                        
+Author:  Olivier 'yazgoo' Abdesselam
+License: Same terms as Vim itself (see |license|)
+
+==============================================================================
+CONTENTS                                                       *vmux-contents*
+
+    Commands..................................|vmux-commands|
+
+==============================================================================
+COMMANDS                                                       *vmux-commands*
+
+
+There are two types of commands: vim commands (which are prefixed with ':')
+and shell command (which are not)
+
+                                                             :VmuxDoneEditing
+:VmuxDoneEditing
+
+  When run do a command which requires an editor, like crontab, a new split
+  will be opened wher you can edit the file.
+  When you are done editing and you want to commit your changes, just run
+  :VmuxDoneEditing
+
+                                                            vsplit,split,e
+vsplit,split,e
+
+  Does exactly like there in-vim counterpart, but from within a terminal
+                            
+                                                                 rsplit,re
+rsplit,re
+
+  Does exactly like e and split, but from the terminal and 
+  in the right end of your session
+                            
+                                                                 lsplit,le
+lsplit,le
+
+  Does exactly like e and split, but from the terminal and 
+  in the left end of your session
+                                                                 vmux_send
+vmux_send
+
+  send a command to your vim session from the terminal
