@@ -1,5 +1,6 @@
 echo openinig "$@"
-done_file_path=/tmp/$(date +%s)_$(echo "$@" | md5sum | cut -d\  -f1)
+which md5sum > /dev/null 2>&1 && md5cmd=md5sum || md5cmd=md5
+done_file_path=/tmp/$(date +%s)_$(echo "$@" | $md5cmd | cut -d\  -f1)
 echo enter when file is saved, unter the command VmuxDoneEditing  
 vmux_send "let g:vmux_done_file_path = \"$done_file_path\""
 vmux_send 'winc l|split '"$@"
