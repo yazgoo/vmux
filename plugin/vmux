@@ -14,11 +14,14 @@ then
   then
     server_file="$session_name"
     server_options="--servername $server_file"
+    vmux_server_file=$server_file abduco -e '^g' -A "$session_name" \
+                     $VMUX_EDITOR --cmd "let g:confirm_quit_nomap = 0" \
+                     --servername $server_file
   else
-    server_options="--cmd \"let g:server_addr = serverstart('$server_file')\""
+    vmux_server_file=$server_file abduco -e '^g' -A "$session_name" \
+                     $VMUX_EDITOR --cmd "let g:confirm_quit_nomap = 0" \
+                     --cmd "let g:server_addr = serverstart('$server_file')"
   fi
-  vmux_server_file=$server_file abduco -e '^g' -A "$session_name" $VMUX_EDITOR \
-    --cmd "let g:confirm_quit_nomap = 0" $server_options
     
 else
   echo "please provide an action (new|attach|list)"
