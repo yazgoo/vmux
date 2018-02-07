@@ -8,7 +8,7 @@ fi
 export VMUX_EDITOR
 [ -z "$vmux_server_file" ] && return
 # specific stuff to vmux session
-export EDITOR=editor
+export EDITOR=vmux-editor
 cd() {  
   builtin cd "$@";
   vmux_send :cd "$PWD"
