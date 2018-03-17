@@ -4,4 +4,4 @@ for file in $*
 do
   vmux_send :cd $PWD
   vmux_send "winc l|${caller:1} $file"
-end
+done
