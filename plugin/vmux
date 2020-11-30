@@ -7,6 +7,7 @@ then
   abduco -e '^g' -A "$2"
 elif [ $# -gt 0 ] && [ "$1" = new ]
 then
+  export EDITOR=vmux-editor
   id=$(date +%s)
   server_file="/tmp/vim-server-$id"
   session_name="$session_prefix$id"
