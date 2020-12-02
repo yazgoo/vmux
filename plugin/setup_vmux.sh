@@ -11,6 +11,6 @@ export VMUX_EDITOR
 export EDITOR=vmux-editor
 cd() {  
   builtin cd "$@";
-  vmux_send :cd "$PWD"
+  vmux_send :tcd "$PWD"
   echo "$PWD" > ~/.cwd;
 }
