@@ -1,9 +1,13 @@
+#!/bin/env sh
 echo opening "$@"
 which md5sum > /dev/null 2>&1 && md5cmd=md5sum || md5cmd=md5
 done_file_path=/tmp/$(date +%s)_$(echo "$@" | $md5cmd | cut -d\  -f1)
-echo enter when file is saved, unter the command VmuxDoneEditing  
+echo enter when file is saved
+vmux_send "let g:vmux_edited_file_path = \"$@\""
 vmux_send "let g:vmux_done_file_path = \"$done_file_path\""
 vmux_send 'winc l|split '"$@"
+vmux_send "call VmuxAddDoneEditingCallback()"
+echo waiting for $done_file_path to be closed...
 while [ ! -e "$done_file_path" ]
 do
 sleep 0.2

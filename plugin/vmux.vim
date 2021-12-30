@@ -1,8 +1,11 @@
-function! VmuxDoneEditing()
-  execute(":x")
+function! VmuxDoneEditingCallback()
   let l:s = system("touch " . g:vmux_done_file_path)
 endfunction
-command! VmuxDoneEditing call VmuxDoneEditing()
+
+function! VmuxAddDoneEditingCallback()
+  let l:winid = bufwinid(g:vmux_edited_file_path)
+  execute("autocmd WinClosed ". l:winid . " ++once call VmuxDoneEditingCallback()")
+endfunction
 
 function! VmuxSplit()
   split +terminal | normal i 

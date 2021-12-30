@@ -19,15 +19,6 @@ COMMANDS                                                       *vmux-commands*
 
 There are two types of commands: vim commands (which are prefixed with ':')
 and shell command (which are not)
-
-                                                             :VmuxDoneEditing
-:VmuxDoneEditing
-
-  When run do a command which requires an editor, like crontab, a new split
-  will be opened wher you can edit the file.
-  When you are done editing and you want to commit your changes, just run
-  :VmuxDoneEditing
-
                                                             vsplit,split,e
 vsplit,split,e
 

@@ -1,3 +1,4 @@
+#!/bin/env sh
 session_prefix="nvim-session-"
 if [ $# -gt 0 ] && [ "$1" = list ]
 then
@@ -8,7 +9,7 @@ then
 elif [ $# -gt 0 ] && [ "$1" = new ]
 then
   export EDITOR=vmux-editor
-  id=$(date +%s)
+  id=$(date +%s)-$2
   server_file="/tmp/vim-server-$id"
   session_name="$session_prefix$id"
   if echo "$VMUX_EDITOR" | grep -v nvim >/dev/null
