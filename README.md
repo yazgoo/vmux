@@ -20,7 +20,7 @@ Then add the following to your .zshrc or .bashrc
 source ~/.config/nvim/plugged/vmux/plugin/setup_vmux.sh
 ```
 
-Or if you want to use vim instead of nvim:
+Or if you want to use vim instead of nvim (you need vim compiled with `+clientserver` flag) :
 
 ```
 source ~/.config/nvim/plugged/vmux/plugin/setup_vmux.sh vim

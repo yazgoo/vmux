@@ -1,5 +1,5 @@
 #!/bin/env sh
-session_prefix="nvim-session-"
+session_prefix="vmux-session-"
 if [ $# -gt 0 ] && [ "$1" = list ]
 then
   abduco -l | grep "$session_prefix"
