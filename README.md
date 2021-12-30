@@ -2,7 +2,7 @@
 
 Helper to use neovim as a terminal multiplexer
 
-[![screencast](doc/screencast.png)](https://asciinema.org/a/RFV64c2xgU2rmTH1GTBfaVwe5)
+[![Demo](https://img.youtube.com/vi/CnLlT0Wd_wY/0.jpg)](https://www.youtube.com/watch?v=CnLlT0Wd_wY)
 
 # install
 
