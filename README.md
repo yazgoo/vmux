@@ -1,6 +1,6 @@
 # vmux
 
-![vmux logo)(vmux.png)
+![vmux logo](vmux.png)
 
 Helper to use neovim as a terminal multiplexer
 
