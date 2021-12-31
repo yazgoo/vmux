@@ -1,6 +1,10 @@
 # vmux
 
+![vmux logo)(vmux.png)
+
 Helper to use neovim as a terminal multiplexer
+
+Demo video:
 
 [![Demo](https://img.youtube.com/vi/CnLlT0Wd_wY/0.jpg)](https://www.youtube.com/watch?v=CnLlT0Wd_wY)
 
