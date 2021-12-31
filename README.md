@@ -12,19 +12,19 @@ First, you need to install [abduco](https://github.com/martanne/abduco).
 
 Add and install the following vim plugin: 
 
-```
+```vimscript
 Plug 'yazgoo/vmux'
 ```
 
 Then add the following to your .zshrc or .bashrc
 
-```
+```bash
 source ~/.config/nvim/plugged/vmux/plugin/setup_vmux.sh
 ```
 
 Or if you want to use vim instead of nvim (you need vim compiled with `+clientserver` flag) :
 
-```
+```bash
 source ~/.config/nvim/plugged/vmux/plugin/setup_vmux.sh vim
 ```
 
@@ -41,12 +41,12 @@ You can detach from the session with ^g
 
 Having a nice tabbar (based on [Caagr98/c98tabbar.vim](https://github.com/Caagr98/c98tabbar.vim)):
 
-```
+```vimscript
 Plug 'git@github.com:yazgoo/c98tabbar.vim'
 Plug 'yazgoo/vmux-c98tabbar'
 ```
 
-Leave terminal insert mode by typing `jj`: 
-```
-tnoremap jj <C-\><C-n>
+Leave terminal insert mode by typing escap twice: 
+```vimscript
+tnoremap <Esc><Esc> <C-\><C-n>
 ```
