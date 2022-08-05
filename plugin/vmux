@@ -1,4 +1,23 @@
 #!/bin/env sh
+vmux_switch() {
+  if which fzf &>/dev/null
+    then
+    res=$((echo detach; echo new; vmux list) | fzf)
+    if [ "$res" = "detach" ]
+    then
+      echo "done"
+    elif [ "$res" = "new" ]
+    then
+      echo "name the session"
+      read session_name
+      vmux new "$session_name"
+    else
+      session=$(echo "$res" | sed 's/.*\t//')
+      vmux attach "$session"
+    fi
+  fi
+}
+
 session_prefix="vmux-session-"
 if [ $# -gt 0 ] && [ "$1" = list ]
 then
@@ -6,6 +25,7 @@ then
 elif [ $# -gt 1 ] && [ "$1" = attach ]
 then
   abduco -e '^g' -A "$2"
+  vmux_switch
 elif [ $# -gt 0 ] && [ "$1" = new ]
 then
   export EDITOR=vmux-editor
@@ -24,7 +44,7 @@ then
                      $VMUX_EDITOR --cmd "let g:confirm_quit_nomap = 0" \
                      --cmd "let g:server_addr = serverstart('$server_file')"
   fi
-    
+  vmux_switch
 else
   echo "please provide an action (new|attach|list)"
 fi
