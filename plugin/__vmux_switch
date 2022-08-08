@@ -1,28 +1,32 @@
 #!/bin/env sh
+previous_session_name="$1"
 
-vmux_switch() {
-  if which fzf &>/dev/null
+if which fzf-usage-sorter &>/dev/null
+then
+  fzf_usage_sorter=fzf-usage-sorter
+else
+  fzf_usage_sorter=""
+fi
+if which fzf &>/dev/null
+then
+  res=$((vmux list | grep -v "$previous_session_name" | sed 's/^\*/ /'| $fzf_usage_sorter vmux list; vmux list | grep "$previous_session_name"; echo detach; echo new) | fzf --no-sort)
+  if [ "$res" = "detach" ]
+  then
+    echo "done"
+  elif [ "$res" = "new" ]
+  then
+    new_hook="$HOME/.config/vmux/hooks/session_name.sh"
+    if [ -e "$new_hook" ]
     then
-    res=$((echo detach; echo new; vmux list) | fzf)
-    if [ "$res" = "detach" ]
-    then
-      echo "done"
-    elif [ "$res" = "new" ]
-    then
-      new_hook="$HOME/.config/vmux/hooks/session_name.sh"
-      if [ -e "$new_hook" ]
-      then
-        . "$new_hook"
-      else
-        echo "name the session"
-        read session_name
-      fi
-      vmux new "$session_name"
+      . "$new_hook"
     else
-      session=$(echo "$res" | sed 's/.*\t//')
-      vmux attach "$session"
+      echo "name the session"
+      read session_name
     fi
+    vmux new "$session_name"
+  else
+    $fzf_usage_sorter "vmux" "select" "echo" "$(echo "$res" | sed 's/^\*/ /')" "timestamp"
+    session=$(echo "$res" | sed 's/.*\t//')
+    vmux attach "$session"
   fi
-}
-
-export -f vmux_switch
+fi

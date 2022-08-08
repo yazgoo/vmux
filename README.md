@@ -9,6 +9,7 @@ Demo video:
 # install
 
 First, you need to install [abduco](https://github.com/martanne/abduco).
+For switching between sessions, you will optionally need [fzf](https://github.com/junegunn/fzf).
 
 Add and install the following vim plugin: 
 
