@@ -36,6 +36,7 @@ Run `:help vmux` from within vim for more in depth help.
 # detaching
 
 You can detach from the session with ^g
+
 After detaching / or quitting vim, you will be prompted, via fzf to:
 - switch session
 - create a new session
