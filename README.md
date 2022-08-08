@@ -36,8 +36,27 @@ Run `:help vmux` from within vim for more in depth help.
 # detaching
 
 You can detach from the session with ^g
+After detaching / or quitting vim, you will be prompted, via fzf to:
+- switch session
+- create a new session
+- exit
 
 # customizing
+
+## session name
+
+
+You can define a custom way to declare a new session via `~/.config/vmux/hooks/session_name.sh`
+The script just needs to export `session_name`.
+
+For example, this script will select the session name from the directory names in `~/dev/`, and change directory:
+
+```
+export session_name=$(ls ~/dev | fzf)
+cd ~/dev/$session_name
+```
+
+## tabbar
 
 Having a nice tabbar (based on [Caagr98/c98tabbar.vim](https://github.com/Caagr98/c98tabbar.vim)):
 

@@ -8,8 +8,14 @@ vmux_switch() {
       echo "done"
     elif [ "$res" = "new" ]
     then
-      echo "name the session"
-      read session_name
+      new_hook="$HOME/.config/vmux/hooks/session_name.sh"
+      if [ -e "$new_hook" ]
+      then
+        . "$new_hook"
+      else
+        echo "name the session"
+        read session_name
+      fi
       vmux new "$session_name"
     else
       session=$(echo "$res" | sed 's/.*\t//')
