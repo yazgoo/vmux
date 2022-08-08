@@ -1,0 +1,28 @@
+#!/bin/env sh
+
+vmux_switch() {
+  if which fzf &>/dev/null
+    then
+    res=$((echo detach; echo new; vmux list) | fzf)
+    if [ "$res" = "detach" ]
+    then
+      echo "done"
+    elif [ "$res" = "new" ]
+    then
+      new_hook="$HOME/.config/vmux/hooks/session_name.sh"
+      if [ -e "$new_hook" ]
+      then
+        . "$new_hook"
+      else
+        echo "name the session"
+        read session_name
+      fi
+      vmux new "$session_name"
+    else
+      session=$(echo "$res" | sed 's/.*\t//')
+      vmux attach "$session"
+    fi
+  fi
+}
+
+export -f vmux_switch
