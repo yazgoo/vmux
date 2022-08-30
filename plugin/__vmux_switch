@@ -8,7 +8,7 @@ then
 else
   baus=""
 fi
-if which fzf &>/dev/null
+if which sk &>/dev/null
 then
   # lines to be selected from
   lines=$(
@@ -20,7 +20,7 @@ then
   fi
   )
 
-  # fzf margins
+  # sk margins
   width=$(echo "$lines" | wc -L)
   height=$(echo "$lines" | wc -l)
   margin_h=$(( (COLUMNS - width - 8)))
@@ -41,15 +41,10 @@ then
   # blockish print
   if which blockish >/dev/null 2>&1
   then
-    # launch fzf once and kill it directly so we can restart it with --no-clear
-    echo | fzf --no-clear &
-    pid=$!
-    sleep 0.01
-    kill $pid
     blockish "$(/bin/ls ~/Pictures/vimpapers/*|shuf -n 1)"
   fi
 
-  res=$(echo "$lines" | fzf --no-sort --margin=$margin_v,$margin_r,$margin_v,$margin_l --border=rounded --header="select vmux session" --no-clear)
+  res=$(echo "$lines" | sk --no-sort --margin=$margin_v,$margin_r,$margin_v,$margin_l --border=rounded --no-clear-start --header="select vmux session" --no-clear)
   if [ "$res" = "Detach" ]
   then
     echo "done"

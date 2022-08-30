@@ -9,7 +9,7 @@ Demo video:
 # install
 
 First, you need to install [abduco](https://github.com/martanne/abduco).
-For switching between sessions, you will optionally need [fzf](https://github.com/junegunn/fzf).
+For switching between sessions, you will optionally need [sk](https://github.com/lotabout/skim/).
 
 Add and install the following vim plugin: 
 
@@ -38,7 +38,7 @@ Run `:help vmux` from within vim for more in depth help.
 
 You can detach from the session with ^g
 
-After detaching / or quitting vim, you will be prompted, via fzf to:
+After detaching / or quitting vim, you will be prompted, via sk to:
 - switch session
 - create a new session
 - exit
@@ -54,7 +54,7 @@ The script just needs to export `session_name`.
 For example, this script will select the session name from the directory names in `~/dev/`, and change directory:
 
 ```
-export session_name=$(ls ~/dev | fzf)
+export session_name=$(ls ~/dev | sk)
 cd ~/dev/$session_name
 ```
 
