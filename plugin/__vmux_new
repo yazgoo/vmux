@@ -10,20 +10,7 @@ then
     read session_name
   fi
 fi
-export EDITOR=vmux-editor
-id=$(date +%s)-"$session_name"
-server_file="/tmp/vim-server-$id"
-session_name="$session_prefix$id"
-if echo "$VMUX_EDITOR" | grep -v nvim >/dev/null
-then
-  server_file="$session_name"
-  server_options="--servername $server_file"
-  vmux_server_file=$server_file abduco -e '^g' -A "$session_name" \
-    $VMUX_EDITOR --cmd "let g:confirm_quit_nomap = 0" \
-    --servername $server_file
-    else
-      vmux_server_file=$server_file abduco -e '^g' -A "$session_name" \
-        $VMUX_EDITOR --cmd "let g:confirm_quit_nomap = 0" \
-        --cmd "let g:server_addr = serverstart('$server_file')"
-fi
 
+vmux_helper="$(dirname $(dirname $0))/target/release/vmux-helper"
+
+$vmux_helper "new" "$session_name"

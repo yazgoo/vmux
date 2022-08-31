@@ -1,0 +1,21 @@
+[package]
+name = "vmux-helper"
+version = "0.0.1"
+authors = ["yazgoo"]
+description = "Fuzzy Finder in rust!"
+documentation = "https://docs.rs/vmux"
+homepage = "https://github.com/yazgoo/vmux"
+repository = "https://github.com/yazgoo/vmux"
+readme  = "README.md"
+keywords = ["fuzzy", "menu", "util"]
+license = "MIT"
+edition = "2018"
+
+[dependencies]
+regex = "1"
+blockish = "0.0.*"
+skim = { git = "https://github.com/yazgoo/skim", branch = "tranparency-on-start" }
+termion = "*"
+atty = "0.2.14"
+rand = "0.8.0" 
+baus = "0.2.0" 
