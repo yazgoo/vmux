@@ -1,19 +1,31 @@
 extern crate baus;
 extern crate skim;
 use blockish::render_image_fitting_terminal;
+use nvim_rs::rpc::handler::Dummy;
+use nvim_rs::Neovim;
+use parity_tokio_ipc::{Connection, Endpoint};
 use regex::Regex;
 use skim::prelude::*;
 use std::collections::HashMap;
+use std::env;
 use std::error::Error;
 use std::fs::File;
+use std::fs::OpenOptions;
+use std::io;
 use std::io::prelude::*;
 use std::io::stdout;
 use std::io::Write;
 use std::os::unix::process::CommandExt;
+use std::path::Path;
 use std::process::Command;
+use std::time::Duration;
 use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
 use termion::raw::IntoRawMode;
+use tokio::io::{split, WriteHalf};
+use tokio_util::compat::Compat;
+use tokio_util::compat::TokioAsyncReadCompatExt;
+use tokio_util::compat::TokioAsyncWriteCompatExt;
 
 use rand::seq::IteratorRandom;
 use std::fs;
@@ -195,6 +207,7 @@ pub fn selector(previous_session_name: String) -> Result<(), Box<dyn Error>> {
 
     let mut options = SkimOptions::default();
     options.no_clear_start = true;
+    options.nosort = true;
     let margin = format!("{},{},{},{}", margin_v, margin_r, margin_v, margin_l);
     options.margin = Some(&margin);
     render_image_fitting_terminal(&random_image()?);
@@ -287,7 +300,50 @@ fn start_session(session_prefix: String) -> Result<(), Box<dyn Error>> {
     selector(session_name)
 }
 
-pub fn main() -> Result<(), Box<dyn Error>> {
+async fn send(command: &String) -> Result<(), Box<dyn Error>> {
+    let vmux_server_file = env::var("vmux_server_file")?;
+    let handler = Dummy::new();
+    let path = Path::new(&vmux_server_file);
+    let stream = Endpoint::connect(path).await?;
+    let (reader, writer) = split(stream);
+    let (neovim, io) = Neovim::<Compat<WriteHalf<Connection>>>::new(
+        reader.compat(),
+        writer.compat_write(),
+        handler,
+    );
+    let _io_handle = tokio::spawn(io);
+    println!("send : {} {}", vmux_server_file, command);
+    neovim.command(command).await?;
+    Ok(())
+}
+
+async fn edit(edited_file_path: &String) -> Result<(), Box<dyn Error>> {
+    let start = SystemTime::now();
+    let since_the_epoch = start
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards");
+    let done_file_path = format!("/tmp/vmux_lock_{}", since_the_epoch.as_millis());
+    send(&format!(
+        ":let g:vmux_edited_file_path = \"{}\"",
+        edited_file_path
+    ))
+    .await?;
+    send(&format!(
+        ":let g:vmux_done_file_path = \"{}\"",
+        done_file_path
+    ))
+    .await?;
+    send(&format!(":winc l|split {}", edited_file_path)).await?;
+    send(&":call VmuxAddDoneEditingCallback()".to_string()).await?;
+    println!("waiting for {} to be created...", done_file_path);
+    while !Path::new(&done_file_path).exists() {
+        std::thread::sleep(Duration::from_millis(200));
+    }
+    Ok(())
+}
+
+#[tokio::main]
+pub async fn main() -> Result<(), Box<dyn Error>> {
     if std::env::args().len() > 1 {
         let action = std::env::args().nth(1).expect("no pattern given");
         if action == "select" {
@@ -301,6 +357,14 @@ pub fn main() -> Result<(), Box<dyn Error>> {
             start_session(session_prefix)?;
         } else if action == "list" {
             show_session_list()?;
+        } else if action == "send" {
+            let args: Vec<String> = env::args().collect();
+            let command = &args[2..].join(" ");
+            send(command).await?;
+        } else if action == "edit" {
+            let args: Vec<String> = env::args().collect();
+            let edited_file_path = &args[2..].join(" ");
+            edit(edited_file_path).await?;
         } else {
             help();
         }

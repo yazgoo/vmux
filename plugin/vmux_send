@@ -1,13 +1,1 @@
-#!/usr/bin/env python3
-import sys
-import os
-
-
-if os.environ["VMUX_EDITOR"] == "nvim":
-    import neovim
-    nvim = neovim.attach('socket', path=os.environ['vmux_server_file'])
-    nvim.command(" ".join(sys.argv[1:]))
-else:
-    os.execvp(os.environ["VMUX_EDITOR"], [
-        os.environ['vmux_server_file'],
-        "--remote-send", "<C-\\><C-N>"+" ".join(sys.argv[1:]) + "<CR>i"])
+$(dirname $(dirname $0))/target/release/vmux-helper send "$@"

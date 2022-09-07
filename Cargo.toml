@@ -19,3 +19,8 @@ termion = "*"
 atty = "0.2.14"
 rand = "0.8.0" 
 baus = "0.2.0" 
+nvim-rs = { version = "0.4", features= [ "use_tokio" ] }
+parity-tokio-ipc = "0.9"
+tokio = "1"
+tokio-util = { version = "0.7", features = [ "compat" ] }
+
