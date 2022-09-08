@@ -9,13 +9,9 @@ use skim::prelude::*;
 use std::collections::HashMap;
 use std::env;
 use std::error::Error;
-use std::fs::File;
-use std::fs::OpenOptions;
-use std::io;
 use std::io::prelude::*;
 use std::io::stdout;
 use std::io::Write;
-use std::os::unix::process::CommandExt;
 use std::path::Path;
 use std::process::Command;
 use std::time::Duration;
@@ -92,21 +88,16 @@ fn list_sessions_with_baus(previous_session_name: String) -> Result<Vec<String>,
     // TODO: put previous session name at bottom of list like in
     //   vmux list | grep -v "$previous_session_name" | sed 's/^\*/ /'| $baus --name vmux --action sort --desc --cleanup; vmux list | grep "$previous_session_name"; echo Detach; echo New;
     let sessions_list = list_sessions()?;
+    let sessions_list = baus::sort(&args, sessions_list, &mut lines_backup, &cache_file_path)?;
     let mut sessions_with_previous: Vec<String> = sessions_list
         .clone()
         .into_iter()
         .filter(|x| x.contains(&previous_session_name))
         .collect();
-    let mut sessions_without_previous: Vec<String> = sessions_list
+    let mut res: Vec<String> = sessions_list
         .into_iter()
         .filter(|x| !x.contains(&previous_session_name))
         .collect();
-    let mut res = baus::sort(
-        &args,
-        sessions_without_previous,
-        &mut lines_backup,
-        &cache_file_path,
-    )?;
     res.append(&mut sessions_with_previous);
     Ok(res)
 }
@@ -171,6 +162,7 @@ fn run_switch_result(res: String) -> Result<(), Box<dyn Error>> {
         start_session(res.replace("New: ", ""))?;
     } else {
         let re = Regex::new(".*\t")?;
+        save_with_baus(res.clone())?;
         attach(re.replace(&res, "").to_string())?;
     }
     Ok(())
@@ -312,7 +304,6 @@ async fn send(command: &String) -> Result<(), Box<dyn Error>> {
         handler,
     );
     let _io_handle = tokio::spawn(io);
-    println!("send : {} {}", vmux_server_file, command);
     neovim.command(command).await?;
     Ok(())
 }
