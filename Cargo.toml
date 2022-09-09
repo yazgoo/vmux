@@ -23,4 +23,4 @@ nvim-rs = { version = "0.4", features= [ "use_tokio" ] }
 parity-tokio-ipc = "0.9"
 tokio = "1"
 tokio-util = { version = "0.7", features = [ "compat" ] }
-
+dirs = "4.0"

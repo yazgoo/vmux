@@ -1805,6 +1805,7 @@ dependencies = [
  "atty",
  "baus",
  "blockish",
+ "dirs",
  "nvim-rs",
  "parity-tokio-ipc",
  "rand 0.8.5",

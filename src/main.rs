@@ -8,7 +8,6 @@ use regex::Regex;
 use skim::prelude::*;
 use std::collections::HashMap;
 use std::env;
-use std::error::Error;
 use std::io::prelude::*;
 use std::io::stdout;
 use std::io::Write;
@@ -17,6 +16,7 @@ use std::process::Command;
 use std::time::Duration;
 use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
+use std::{error::Error, fmt};
 use termion::raw::IntoRawMode;
 use tokio::io::{split, WriteHalf};
 use tokio_util::compat::Compat;
@@ -50,9 +50,27 @@ fn trim_newline(s: &mut String) {
     }
 }
 
+#[derive(Debug, Clone)]
+struct HomeDirNotFound;
+
+impl Error for HomeDirNotFound {}
+
+impl fmt::Display for HomeDirNotFound {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "home directory was not retrieved")
+    }
+}
+
+fn home() -> Result<String, Box<dyn Error>> {
+    Ok(dirs::home_dir()
+        .ok_or(Box::new(HomeDirNotFound))?
+        .to_string_lossy()
+        .to_string())
+}
+
 fn random_image() -> Result<String, Box<dyn Error>> {
     let mut rng = rand::thread_rng();
-    let files = fs::read_dir("/home/yazgoo/Pictures/vimpapers/")?;
+    let files = fs::read_dir(format!("{}/Pictures/vimpapers/", home()?))?;
     let file = files.choose(&mut rng).unwrap()?;
     Ok(file.path().display().to_string())
 }
@@ -119,7 +137,10 @@ fn save_with_baus(val: String) -> Result<Vec<String>, Box<dyn Error>> {
 
 fn list_sessions_name_hook() -> Result<Vec<String>, Box<dyn Error>> {
     let output = Command::new("bash")
-        .arg("/home/yazgoo/.config/vmux/hooks/list_sessions_names.sh")
+        .arg(format!(
+            "{}/.config/vmux/hooks/list_sessions_names.sh",
+            home()?
+        ))
         .output()?;
     Ok(output
         .stdout
@@ -249,8 +270,9 @@ fn start_session(session_prefix: String) -> Result<(), Box<dyn Error>> {
     let session_name = format!("{}{}", id, session_suffix);
     // TODO select vim/neovim via VMUX_EDITOR?
     let mut command = Command::new("/usr/bin/abduco");
+    /* TODO */
     let output = Command::new("/usr/bin/bash")
-        .arg("/home/yazgoo/.config/vmux/hooks/session_name.sh")
+        .arg(format!("{}/.config/vmux/hooks/session_name.sh", home()?))
         .arg(&session_prefix)
         .output()?;
     let env_regx = Regex::new(r"^([^=]*)=(.*)$")?;
@@ -333,34 +355,39 @@ async fn edit(edited_file_path: &String) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+fn run_or_selector(f: impl Fn(String) -> Result<(), Box<dyn Error>>) -> Result<(), Box<dyn Error>> {
+    match std::env::args().nth(2) {
+        Some(session_prefix) => f(session_prefix),
+        None => selector("".to_string()),
+    }
+}
+
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
-    if std::env::args().len() > 1 {
-        let action = std::env::args().nth(1).expect("no pattern given");
-        if action == "select" {
-            let previous_session_name = std::env::args().nth(2).expect("no pattern given");
-            selector(previous_session_name)?;
-        } else if action == "attach" {
-            let session_name = std::env::args().nth(2).expect("no pattern given");
-            attach(session_name)?;
-        } else if action == "new" {
-            let session_prefix = std::env::args().nth(2).expect("no pattern given");
-            start_session(session_prefix)?;
-        } else if action == "list" {
-            show_session_list()?;
-        } else if action == "send" {
-            let args: Vec<String> = env::args().collect();
-            let command = &args[2..].join(" ");
-            send(command).await?;
-        } else if action == "edit" {
-            let args: Vec<String> = env::args().collect();
-            let edited_file_path = &args[2..].join(" ");
-            edit(edited_file_path).await?;
-        } else {
-            help();
+    let arg1 = std::env::args().nth(1);
+    match arg1 {
+        Some(action) => {
+            if action == "select" {
+                run_or_selector(selector)?;
+            } else if action == "attach" {
+                run_or_selector(attach)?;
+            } else if action == "new" {
+                run_or_selector(start_session)?;
+            } else if action == "list" {
+                show_session_list()?;
+            } else if action == "send" {
+                let args: Vec<String> = env::args().collect();
+                let command = &args[2..].join(" ");
+                send(command).await?;
+            } else if action == "edit" {
+                let args: Vec<String> = env::args().collect();
+                let edited_file_path = &args[2..].join(" ");
+                edit(edited_file_path).await?;
+            } else {
+                help();
+            }
         }
-    } else {
-        help();
+        None => help(),
     }
     Ok(())
 }

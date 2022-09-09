@@ -17,6 +17,13 @@ Add and install the following vim plugin:
 Plug 'yazgoo/vmux'
 ```
 
+Then build vmux-helper
+
+```bash
+cd ~/.config/nvim/plugged/vmux
+cargo build --release
+```
+
 Then add the following to your .zshrc or .bashrc
 
 ```bash
