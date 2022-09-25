@@ -77,11 +77,8 @@ fn random_image() -> Result<String, Box<dyn Error>> {
 
 fn list_sessions() -> Result<Vec<String>, Box<dyn Error>> {
     let session_regx = Regex::new(r".*vmux-session.*")?;
-    let output = Command::new("/usr/bin/abduco").arg("-l").output()?;
-    Ok(output
-        .stdout
-        .lines()
-        .map(|x| x.unwrap().replace("*", ""))
+    Ok(diss::list_sessions()?
+        .into_iter()
         .filter(|x| session_regx.is_match(x))
         .collect())
 }
@@ -159,13 +156,17 @@ fn list(previous_session_name: String) -> Result<Vec<String>, Box<dyn Error>> {
 }
 
 fn attach(session: String) -> Result<(), Box<dyn Error>> {
-    let child = Command::new("/usr/bin/abduco")
-        .arg("-e")
-        .arg("^g")
-        .arg("-A")
-        .arg(&session)
-        .spawn();
-    child?.wait()?;
+    let empty = Vec::new();
+    let empty2 = HashMap::new();
+    {
+        let mut stdout = stdout().into_raw_mode()?;
+
+        write!(stdout, "{}", termion::clear::All)?;
+        write!(stdout, "{}", termion::cursor::Goto(1, 1))?;
+
+        diss::server_client(&session, &empty, empty2)?;
+        stdout.suspend_raw_mode()?;
+    }
     selector(session)
 }
 
@@ -269,7 +270,6 @@ fn start_session(session_prefix: String) -> Result<(), Box<dyn Error>> {
     let server_file = format!("/tmp/vim-server-{}", id);
     let session_name = format!("{}{}", id, session_suffix);
     // TODO select vim/neovim via VMUX_EDITOR?
-    let mut command = Command::new("/usr/bin/abduco");
     /* TODO */
     let output = Command::new("/usr/bin/bash")
         .arg(format!("{}/.config/vmux/hooks/session_name.sh", home()?))
@@ -282,7 +282,7 @@ fn start_session(session_prefix: String) -> Result<(), Box<dyn Error>> {
         .map(|x| x.unwrap())
         .into_iter()
         .collect();
-    let env_vars: HashMap<String, String> = lines
+    let mut env_vars: HashMap<String, String> = lines
         .into_iter()
         .map(|line| {
             let x = env_regx.captures(&line).unwrap();
@@ -292,25 +292,18 @@ fn start_session(session_prefix: String) -> Result<(), Box<dyn Error>> {
             )
         })
         .collect();
-    env_vars.get("PWD").map(|dir| command.current_dir(dir));
-    let process = command
-        .envs(env_vars)
-        .env("vmux_server_file", &server_file)
-        .arg("-e")
-        .arg("^g")
-        .arg("-A")
-        .arg(&session_name)
-        .arg("nvim")
-        .arg("--cmd")
-        .arg("let g:confirm_quit_nomap = 0")
-        .arg("--cmd")
-        .arg(format!(
-            "let g:server_addr = serverstart('{}')",
-            server_file
-        ));
-    println!("cmd: {:?}", process);
-    let child = process.spawn();
-    child?.wait()?;
+    env_vars.insert("vmux_server_file".to_string(), server_file.clone());
+
+    let command = vec![
+        "nvim".to_string(),
+        "--cmd".to_string(),
+        "let g:confirm_quit_nomap = 0".to_string(),
+        "--cmd".to_string(),
+        format!("let g:server_addr = serverstart('{}')", server_file).to_string(),
+    ];
+    {
+        diss::server_client(&session_name, &command, env_vars)?;
+    }
     selector(session_name)
 }
 
