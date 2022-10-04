@@ -158,15 +158,7 @@ fn list(previous_session_name: String) -> Result<Vec<String>, Box<dyn Error>> {
 fn attach(session: String) -> Result<(), Box<dyn Error>> {
     let empty = Vec::new();
     let empty2 = HashMap::new();
-    {
-        let mut stdout = stdout().into_raw_mode()?;
-
-        write!(stdout, "{}", termion::clear::All)?;
-        write!(stdout, "{}", termion::cursor::Goto(1, 1))?;
-
-        diss::server_client(&session, &empty, empty2)?;
-        stdout.suspend_raw_mode()?;
-    }
+    diss::server_client(&session, &empty, empty2)?;
     selector(session)
 }
 
@@ -225,13 +217,6 @@ pub fn selector(previous_session_name: String) -> Result<(), Box<dyn Error>> {
     let margin = format!("{},{},{},{}", margin_v, margin_r, margin_v, margin_l);
     options.margin = Some(&margin);
     render_image_fitting_terminal(&random_image()?);
-
-    {
-        let mut stdout = stdout().into_raw_mode()?;
-
-        write!(stdout, "{}", termion::clear::All)?;
-        write!(stdout, "{}", termion::cursor::Goto(1, 1))?;
-    }
 
     let item_reader_option = SkimItemReaderOption::default();
 
@@ -301,9 +286,7 @@ fn start_session(session_prefix: String) -> Result<(), Box<dyn Error>> {
         "--cmd".to_string(),
         format!("let g:server_addr = serverstart('{}')", server_file).to_string(),
     ];
-    {
-        diss::server_client(&session_name, &command, env_vars)?;
-    }
+    diss::server_client(&session_name, &command, env_vars)?;
     selector(session_name)
 }
 
