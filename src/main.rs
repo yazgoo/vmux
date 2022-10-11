@@ -9,15 +9,12 @@ use skim::prelude::*;
 use std::collections::HashMap;
 use std::env;
 use std::io::prelude::*;
-use std::io::stdout;
-use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 use std::time::Duration;
 use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
 use std::{error::Error, fmt};
-use termion::raw::IntoRawMode;
 use tokio::io::{split, WriteHalf};
 use tokio_util::compat::Compat;
 use tokio_util::compat::TokioAsyncReadCompatExt;
@@ -68,11 +65,16 @@ fn home() -> Result<String, Box<dyn Error>> {
         .to_string())
 }
 
-fn random_image() -> Result<String, Box<dyn Error>> {
+fn random_image() -> Result<Option<String>, Box<dyn Error>> {
     let mut rng = rand::thread_rng();
-    let files = fs::read_dir(format!("{}/Pictures/vimpapers/", home()?))?;
-    let file = files.choose(&mut rng).unwrap()?;
-    Ok(file.path().display().to_string())
+    let wallpapers_dir = vmux_wallpapers_path()?;
+    if Path::new(&wallpapers_dir).is_dir() {
+        let files = fs::read_dir(format!("{}/Pictures/vimpapers/", home()?))?;
+        let file = files.choose(&mut rng).unwrap()?;
+        Ok(Some(file.path().display().to_string()))
+    } else {
+        Ok(None)
+    }
 }
 
 fn list_sessions() -> Result<Vec<String>, Box<dyn Error>> {
@@ -132,18 +134,46 @@ fn save_with_baus(val: String) -> Result<Vec<String>, Box<dyn Error>> {
     baus::save(&args, res, lines_backup, &cache_file_path)
 }
 
+fn vmux_wallpapers_path() -> Result<String, Box<dyn Error>> {
+    Ok(format!("{}/.config/vmux/wallpapers/", home()?).into())
+}
+
+fn vmux_hook_path(hook_name: &str) -> Result<String, Box<dyn Error>> {
+    Ok(format!("{}/.config/vmux/hooks/{}.sh", home()?, hook_name).into())
+}
+
 fn list_sessions_name_hook() -> Result<Vec<String>, Box<dyn Error>> {
-    let output = Command::new("bash")
-        .arg(format!(
-            "{}/.config/vmux/hooks/list_sessions_names.sh",
-            home()?
-        ))
-        .output()?;
-    Ok(output
-        .stdout
-        .lines()
-        .map(|x| format!("New: {}", x.unwrap()))
-        .collect())
+    let list_session_name_path = vmux_hook_path("list_sessions_names")?;
+    let list_session_name_f = Path::new(&list_session_name_path);
+    if list_session_name_f.is_file() {
+        let output = Command::new("bash").arg(list_session_name_path).output()?;
+        Ok(output
+            .stdout
+            .lines()
+            .map(|x| format!("New: {}", x.unwrap()))
+            .collect())
+    } else {
+        Ok(vec![])
+    }
+}
+
+fn session_name_hook(session_prefix: String) -> Result<Vec<String>, Box<dyn Error>> {
+    let session_name_path = vmux_hook_path("session_name")?;
+    let res = if Path::new(&session_name_path).is_file() {
+        let output = Command::new("/usr/bin/bash")
+            .arg(&session_name_path)
+            .arg(&session_prefix)
+            .output()?;
+        output
+            .stdout
+            .lines()
+            .map(|x| x.unwrap())
+            .into_iter()
+            .collect()
+    } else {
+        vec![]
+    };
+    Ok(res)
 }
 
 fn list(previous_session_name: String) -> Result<Vec<String>, Box<dyn Error>> {
@@ -158,7 +188,7 @@ fn list(previous_session_name: String) -> Result<Vec<String>, Box<dyn Error>> {
 fn attach(session: String) -> Result<(), Box<dyn Error>> {
     let empty = Vec::new();
     let empty2 = HashMap::new();
-    diss::server_client(&session, &empty, empty2)?;
+    diss::server_client(&session, &empty, empty2, Some("g".into()))?;
     selector(session)
 }
 
@@ -183,6 +213,8 @@ fn run_switch_result(res: String) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn selector(previous_session_name: String) -> Result<(), Box<dyn Error>> {
+    print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
+
     let lines = list(previous_session_name)?;
 
     let s = termion::terminal_size()?;
@@ -216,7 +248,7 @@ pub fn selector(previous_session_name: String) -> Result<(), Box<dyn Error>> {
     options.nosort = true;
     let margin = format!("{},{},{},{}", margin_v, margin_r, margin_v, margin_l);
     options.margin = Some(&margin);
-    render_image_fitting_terminal(&random_image()?);
+    random_image()?.map(|img| render_image_fitting_terminal(&img));
 
     let item_reader_option = SkimItemReaderOption::default();
 
@@ -256,17 +288,8 @@ fn start_session(session_prefix: String) -> Result<(), Box<dyn Error>> {
     let session_name = format!("{}{}", id, session_suffix);
     // TODO select vim/neovim via VMUX_EDITOR?
     /* TODO */
-    let output = Command::new("/usr/bin/bash")
-        .arg(format!("{}/.config/vmux/hooks/session_name.sh", home()?))
-        .arg(&session_prefix)
-        .output()?;
     let env_regx = Regex::new(r"^([^=]*)=(.*)$")?;
-    let lines: Vec<String> = output
-        .stdout
-        .lines()
-        .map(|x| x.unwrap())
-        .into_iter()
-        .collect();
+    let lines: Vec<String> = session_name_hook(session_prefix)?;
     let mut env_vars: HashMap<String, String> = lines
         .into_iter()
         .map(|line| {
@@ -286,7 +309,7 @@ fn start_session(session_prefix: String) -> Result<(), Box<dyn Error>> {
         "--cmd".to_string(),
         format!("let g:server_addr = serverstart('{}')", server_file).to_string(),
     ];
-    diss::server_client(&session_name, &command, env_vars)?;
+    diss::server_client(&session_name, &command, env_vars, Some("g".into()))?;
     selector(session_name)
 }
 

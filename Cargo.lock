@@ -505,7 +505,9 @@ checksum = "212d0f5754cb6769937f4501cc0e67f4f4483c8d2c3e1e922ee9edbe4ab4c7c0"
 
 [[package]]
 name = "diss"
-version = "0.0.4"
+version = "0.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb8903eba0f0a2f4a2fee34d501534e35bceb06337686295a66f766db9cc2ee5"
 dependencies = [
  "anyhow",
  "bincode",
