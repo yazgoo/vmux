@@ -517,6 +517,7 @@ dependencies = [
  "serde",
  "signal-hook",
  "termion",
+ "timeout-readwrite",
 ]
 
 [[package]]
@@ -1771,6 +1772,15 @@ dependencies = [
  "quote 1.0.21",
  "standback",
  "syn 1.0.99",
+]
+
+[[package]]
+name = "timeout-readwrite"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61e9b6279ee83562e5f8ac37bbd4ca032016616c9f5688b0d1b7775619619dce"
+dependencies = [
+ "nix 0.23.1",
 ]
 
 [[package]]
