@@ -102,8 +102,6 @@ fn list_sessions_with_baus(previous_session_name: String) -> Result<Vec<String>,
     };
     let cache_file_path = baus::get_cache_file_path(&args)?;
     let mut lines_backup = baus::get_lines_backup(&cache_file_path)?;
-    // TODO: put previous session name at bottom of list like in
-    //   vmux list | grep -v "$previous_session_name" | sed 's/^\*/ /'| $baus --name vmux --action sort --desc --cleanup; vmux list | grep "$previous_session_name"; echo Detach; echo New;
     let sessions_list = list_sessions()?;
     let sessions_list = baus::sort(&args, sessions_list, &mut lines_backup, &cache_file_path)?;
     let mut sessions_with_previous: Vec<String> = sessions_list
@@ -287,7 +285,6 @@ fn start_session(session_prefix: String) -> Result<(), Box<dyn Error>> {
     let server_file = format!("/tmp/vim-server-{}", id);
     let session_name = format!("{}{}", id, session_suffix);
     // TODO select vim/neovim via VMUX_EDITOR?
-    /* TODO */
     let env_regx = Regex::new(r"^([^=]*)=(.*)$")?;
     let lines: Vec<String> = session_name_hook(session_prefix)?;
     let mut env_vars: HashMap<String, String> = lines
