@@ -60,7 +60,7 @@ impl fmt::Display for HomeDirNotFound {
 
 fn home() -> Result<String, Box<dyn Error>> {
     Ok(dirs::home_dir()
-        .ok_or(Box::new(HomeDirNotFound))?
+        .ok_or_else(|| Box::new(HomeDirNotFound))?
         .to_string_lossy()
         .to_string())
 }
@@ -127,17 +127,16 @@ fn save_with_baus(val: String) -> Result<Vec<String>, Box<dyn Error>> {
     };
     let cache_file_path = baus::get_cache_file_path(&args)?;
     let lines_backup = baus::get_lines_backup(&cache_file_path)?;
-    let mut res = Vec::new();
-    res.push(val);
+    let res = vec![val];
     baus::save(&args, res, lines_backup, &cache_file_path)
 }
 
 fn vmux_wallpapers_path() -> Result<String, Box<dyn Error>> {
-    Ok(format!("{}/.config/vmux/wallpapers/", home()?).into())
+    Ok(format!("{}/.config/vmux/wallpapers/", home()?))
 }
 
 fn vmux_hook_path(hook_name: &str) -> Result<String, Box<dyn Error>> {
-    Ok(format!("{}/.config/vmux/hooks/{}.sh", home()?, hook_name).into())
+    Ok(format!("{}/.config/vmux/hooks/{}.sh", home()?, hook_name))
 }
 
 fn list_sessions_name_hook() -> Result<Vec<String>, Box<dyn Error>> {
@@ -241,17 +240,23 @@ pub fn selector(previous_session_name: String) -> Result<(), Box<dyn Error>> {
     };
     let margin_v = margin_v + lines_n / 5;
 
-    let mut options = SkimOptions::default();
+    let mut options = SkimOptions::<'_> {
+        no_clear_start: true,
+        nosort: true,
+        ..Default::default()
+    };
     options.no_clear_start = true;
     options.nosort = true;
     let margin = format!("{},{},{},{}", margin_v, margin_r, margin_v, margin_l);
     options.margin = Some(&margin);
-    random_image()?.map(|img| render_image_fitting_terminal(&img));
+    if let Some(img) = random_image()? {
+        render_image_fitting_terminal(&img)
+    }
 
     let item_reader_option = SkimItemReaderOption::default();
 
     let cmd_collector = Rc::new(RefCell::new(SkimItemReader::new(item_reader_option)));
-    options.cmd_collector = cmd_collector.clone();
+    options.cmd_collector = cmd_collector;
 
     let (tx, rx): (SkimItemSender, SkimItemReceiver) = unbounded();
 
@@ -262,7 +267,7 @@ pub fn selector(previous_session_name: String) -> Result<(), Box<dyn Error>> {
 
     let selected_items = Skim::run_with(&options, Some(rx))
         .map(|out| out.selected_items)
-        .unwrap_or_else(|| Vec::new());
+        .unwrap_or_else(Vec::new);
     for item in selected_items.iter() {
         let res = item.output();
         run_switch_result(res.to_string())?;
@@ -304,13 +309,13 @@ fn start_session(session_prefix: String) -> Result<(), Box<dyn Error>> {
         "--cmd".to_string(),
         "let g:confirm_quit_nomap = 0".to_string(),
         "--cmd".to_string(),
-        format!("let g:server_addr = serverstart('{}')", server_file).to_string(),
+        format!("let g:server_addr = serverstart('{}')", server_file),
     ];
     diss::server_client(&session_name, &command, env_vars, Some("g".into()))?;
     selector(session_name)
 }
 
-async fn send(command: &String) -> Result<(), Box<dyn Error>> {
+async fn send(command: &str) -> Result<(), Box<dyn Error>> {
     let vmux_server_file = env::var("vmux_server_file")?;
     let handler = Dummy::new();
     let path = Path::new(&vmux_server_file);
@@ -326,7 +331,7 @@ async fn send(command: &String) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-async fn edit(edited_file_path: &String) -> Result<(), Box<dyn Error>> {
+async fn edit(edited_file_path: &str) -> Result<(), Box<dyn Error>> {
     let start = SystemTime::now();
     let since_the_epoch = start
         .duration_since(UNIX_EPOCH)
@@ -343,7 +348,7 @@ async fn edit(edited_file_path: &String) -> Result<(), Box<dyn Error>> {
     ))
     .await?;
     send(&format!(":winc l|split {}", edited_file_path)).await?;
-    send(&":call VmuxAddDoneEditingCallback()".to_string()).await?;
+    send(":call VmuxAddDoneEditingCallback()").await?;
     println!("waiting for {} to be created...", done_file_path);
     while !Path::new(&done_file_path).exists() {
         std::thread::sleep(Duration::from_millis(200));

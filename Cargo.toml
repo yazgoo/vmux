@@ -24,4 +24,4 @@ parity-tokio-ipc = "0.9"
 tokio = "1"
 tokio-util = { version = "0.7", features = [ "compat" ] }
 dirs = "4.0"
-diss = "0.0.6"
+diss = "0.0.7"
