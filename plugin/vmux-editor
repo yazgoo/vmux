@@ -1,2 +1,2 @@
 #!/bin/env sh
-$(dirname $(dirname $0))/target/release/vmux-helper edit "$@"
+$(dirname $(dirname $0))/target/release/vmux edit "$@"
