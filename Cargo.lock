@@ -505,9 +505,9 @@ checksum = "212d0f5754cb6769937f4501cc0e67f4f4483c8d2c3e1e922ee9edbe4ab4c7c0"
 
 [[package]]
 name = "diss"
-version = "0.0.8"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da1dde758d251585a1e482546ccc587b4b96935f286d6496490c1b9f2e811768"
+checksum = "3ef2e40f8255263e01bc081c51b8b05ce9e837d14912c4e4ad98d9fdd8873565"
 dependencies = [
  "anyhow",
  "bincode",
@@ -516,6 +516,7 @@ dependencies = [
  "dirs",
  "nix 0.25.0",
  "pty",
+ "rand 0.8.5",
  "serde",
  "signal-hook",
  "termion",

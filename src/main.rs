@@ -185,7 +185,7 @@ fn list(previous_session_name: String) -> Result<Vec<String>, Box<dyn Error>> {
 fn attach(session: String) -> Result<(), Box<dyn Error>> {
     let empty = Vec::new();
     let empty2 = HashMap::new();
-    diss::server_client(&session, &empty, empty2, Some("g".into()))?;
+    diss::run(&session, &empty, empty2, Some("g".into()))?;
     selector(session)
 }
 
@@ -311,7 +311,7 @@ fn start_session(session_prefix: String) -> Result<(), Box<dyn Error>> {
         "--cmd".to_string(),
         format!("let g:server_addr = serverstart('{}')", server_file),
     ];
-    diss::server_client(&session_name, &command, env_vars, Some("g".into()))?;
+    diss::run(&session_name, &command, env_vars, Some("g".into()))?;
     selector(session_name)
 }
 
