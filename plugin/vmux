@@ -1,17 +1,1 @@
-#!/bin/env sh
-
-session_prefix="vmux-session-"
-if [ $# -gt 0 ] && [ "$1" = list ]
-then
-  abduco -l | grep "$session_prefix"
-elif [ $# -gt 1 ] && [ "$1" = attach ]
-then
-  abduco -e '^g' -A "$2"
-  $(dirname $0)/__vmux_switch "$2"
-elif [ $# -gt 0 ] && [ "$1" = new ]
-then
-  source $(dirname $0)/__vmux_new
-  $(dirname $0)/__vmux_switch "$session_name"
-else
-  echo "please provide an action (new|attach|list)"
-fi
+../target/release/vmux

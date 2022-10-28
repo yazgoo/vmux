@@ -8,13 +8,17 @@ Demo video:
 
 # install
 
-First, you need to install [abduco](https://github.com/martanne/abduco).
-For switching between sessions, you will optionally need [fzf](https://github.com/junegunn/fzf).
-
 Add and install the following vim plugin: 
 
 ```vimscript
 Plug 'yazgoo/vmux'
+```
+
+Then build vmux
+
+```bash
+cd ~/.config/nvim/plugged/vmux
+cargo build --release
 ```
 
 Then add the following to your .zshrc or .bashrc
@@ -38,7 +42,7 @@ Run `:help vmux` from within vim for more in depth help.
 
 You can detach from the session with ^g
 
-After detaching / or quitting vim, you will be prompted, via fzf to:
+After detaching / or quitting vim, you will be prompted, via sk to:
 - switch session
 - create a new session
 - exit
@@ -48,15 +52,37 @@ After detaching / or quitting vim, you will be prompted, via fzf to:
 ## session name
 
 
-You can define a custom way to declare a new session via `~/.config/vmux/hooks/session_name.sh`
-The script just needs to export `session_name`.
+You can define a custom way to setup a new session via `~/.config/vmux/hooks/session_name.sh`
+The script just needs to print environment variables of the form:
 
-For example, this script will select the session name from the directory names in `~/dev/`, and change directory:
+key=value
+
+it takes the session name as argument.
+
+For example, this script will print the content of envrc
+and set working directory to `~/dev/$1`
 
 ```
-export session_name=$(ls ~/dev | fzf)
-cd ~/dev/$session_name
+mydir=$HOME/dev/"$1"
+[ -e "$mydir"/.envrc ] && cat "$mydir"/.envrc
+echo PWD="$mydir"
 ```
+
+## list sessions names
+
+
+You can define a list of new session names via `~/.config/vmux/hooks/list_sessions_names.sh`
+The script just needs to output session names one by line.
+
+For example, this script will list all directories names in `~/dev`
+
+```
+find -L ~/dev -maxdepth 1 -type d | while read d; do basename $d; done
+```
+
+## wallpaper
+
+You can put images which will be used as wallpapers inside `~/.config/vmux/wallpapers/`.
 
 ## tabbar
 
