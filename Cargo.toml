@@ -13,9 +13,9 @@ edition = "2018"
 
 [dependencies]
 regex = "1"
-blockish = "0.0.*"
+blockish = "0.0"
 skim = "0.10"
-termion = "*"
+termion = "1.5"
 atty = "0.2.14"
 rand = "0.8.0" 
 baus = "0.2.0" 
