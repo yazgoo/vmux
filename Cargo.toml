@@ -14,7 +14,7 @@ edition = "2018"
 [dependencies]
 regex = "1"
 blockish = "0.0.*"
-skim = { git = "https://github.com/yazgoo/skim", branch = "tranparency-on-start" }
+skim = "0.10"
 termion = "*"
 atty = "0.2.14"
 rand = "0.8.0" 
