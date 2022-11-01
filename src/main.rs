@@ -69,9 +69,11 @@ fn random_image() -> Result<Option<String>, Box<dyn Error>> {
     let mut rng = rand::thread_rng();
     let wallpapers_dir = vmux_wallpapers_path()?;
     if Path::new(&wallpapers_dir).is_dir() {
-        let files = fs::read_dir(format!("{}/Pictures/vimpapers/", home()?))?;
-        let file = files.choose(&mut rng).unwrap()?;
-        Ok(Some(file.path().display().to_string()))
+        let files = fs::read_dir(wallpapers_dir)?;
+        match files.choose(&mut rng) {
+            Some(Ok(file)) => Ok(Some(file.path().display().to_string())),
+            _ => Ok(None),
+        }
     } else {
         Ok(None)
     }
@@ -218,14 +220,14 @@ pub fn selector(previous_session_name: String) -> Result<(), Box<dyn Error>> {
     let columns = s.0;
     let lines_n = s.1;
 
-    let height = lines.len();
+    let height = lines.len() as u16;
     let width = lines
         .clone()
         .into_iter()
-        .fold(0, |acc, x| std::cmp::max(acc, x.len()));
+        .fold(0, |acc, x| std::cmp::max(acc, x.len())) as u16;
 
-    let margin_h = if columns > width as u16 + 8 {
-        columns - width as u16 - 8
+    let margin_h = if columns > width + 8 {
+        columns - width - 8
     } else {
         0
     };
@@ -233,12 +235,14 @@ pub fn selector(previous_session_name: String) -> Result<(), Box<dyn Error>> {
     let margin_r = margin_h / 5;
     let margin_l = 4 * margin_h / 5;
 
-    let margin_v = if lines_n > height as u16 {
-        (lines_n - height as u16) / 2
+    // adjust for skim UI components
+    let height = height + 1;
+
+    let margin_v = if lines_n > height {
+        (lines_n - height) / 2
     } else {
-        0
+        lines_n / 5
     };
-    let margin_v = margin_v + lines_n / 5;
 
     let mut options = SkimOptions::<'_> {
         no_clear_start: true,
