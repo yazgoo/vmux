@@ -236,7 +236,7 @@ pub fn selector(previous_session_name: String) -> Result<(), Box<dyn Error>> {
     let margin_l = 4 * margin_h / 5;
 
     // adjust for skim UI components
-    let height = height + 1;
+    let height = height + 2;
 
     let margin_v = if lines_n > height {
         (lines_n - height) / 2

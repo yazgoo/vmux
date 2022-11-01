@@ -103,11 +103,13 @@ tnoremap <Esc><Esc> <C-\><C-n>
 docker run -it --entrypoint bash rust
 apt update
 apt install neovim
+
 install vim-plug 
+
 sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 
-mkdir ~/.config/nvim
+mkdir -p ~/.config/nvim
 
 edit init.vim
 
@@ -119,4 +121,3 @@ call plug#begin()
 Plug 'yazgoo/vmux', {'do': 'cargo install vmux' }
 call plug#end()
 
-ln -s ~/.local/share/nvim/plugged/vmux/target/release/vmux /usr/bin/
