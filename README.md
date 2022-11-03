@@ -98,8 +98,9 @@ tnoremap <Esc><Esc> <C-\><C-n>
 start docker container
 
 ```bash
-docker run -it --entrypoint bash rust
-```
-
-```bash
+docker run -v $PWD/setup-alpine.sh:/setup.sh -it --entrypoint bash rust
+# after entering docker, let's run setup script
+/setup.sh
+# setup done, let's start vmux
+vmux new
 ```
