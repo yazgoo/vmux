@@ -41,3 +41,6 @@ fi
 EOF
 
 chmod +x ~/.config/vmux/hooks/*
+
+mkdir ~/.config/vmux/wallpapers
+cp ~/.local/share/nvim/plugged/vmux/vmux.png ~/.config/vmux/wallpapers
