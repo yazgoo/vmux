@@ -95,24 +95,11 @@ tnoremap <Esc><Esc> <C-\><C-n>
 
 ## detailed setup notes
 
+start docker container
+
+```bash
 docker run -it --entrypoint bash rust
-apt update
-apt install neovim
+```
 
-install vim-plug 
-
-sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
-       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-
-mkdir -p ~/.config/nvim
-
-edit init.vim
-
-carrog insall updtae
-    Updating crates.io index
-
-
-call plug#begin()
-Plug 'yazgoo/vmux', {'do': 'cargo install vmux' }
-call plug#end()
-
+```bash
+```

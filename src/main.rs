@@ -145,7 +145,7 @@ fn list_sessions_name_hook() -> Result<Vec<String>, Box<dyn Error>> {
     let list_session_name_path = vmux_hook_path("list_sessions_names")?;
     let list_session_name_f = Path::new(&list_session_name_path);
     if list_session_name_f.is_file() {
-        let output = Command::new("bash").arg(list_session_name_path).output()?;
+        let output = Command::new(list_session_name_path).output()?;
         Ok(output
             .stdout
             .lines()
@@ -159,8 +159,7 @@ fn list_sessions_name_hook() -> Result<Vec<String>, Box<dyn Error>> {
 fn session_name_hook(session_prefix: String) -> Result<Vec<String>, Box<dyn Error>> {
     let session_name_path = vmux_hook_path("session_name")?;
     let res = if Path::new(&session_name_path).is_file() {
-        let output = Command::new("/usr/bin/bash")
-            .arg(&session_name_path)
+        let output = Command::new(session_name_path)
             .arg(&session_prefix)
             .output()?;
         output
