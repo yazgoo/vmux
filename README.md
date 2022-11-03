@@ -8,17 +8,12 @@ Demo video:
 
 # install
 
-Add and install the following vim plugin: 
+You will need rust and cargo [installed](https://www.rust-lang.org/tools/install).
+
+Then install the following vim plugin, with a hook to install vmux crate: 
 
 ```vimscript
-Plug 'yazgoo/vmux'
-```
-
-Then build vmux
-
-```bash
-cd ~/.config/nvim/plugged/vmux
-cargo build --release
+Plug 'yazgoo/vmux', {'do': 'cargo install vmux' }
 ```
 
 Then add the following to your .zshrc or .bashrc
@@ -53,7 +48,7 @@ After detaching / or quitting vim, you will be prompted, via sk to:
 
 
 You can define a custom way to setup a new session via `~/.config/vmux/hooks/session_name.sh`
-The script just needs to print environment variables of the form:
+The script just needs to print environment variables of the form (`env` command will do that):
 
 key=value
 
@@ -65,11 +60,11 @@ and set working directory to `~/dev/$1`
 ```
 mydir=$HOME/dev/"$1"
 [ -e "$mydir"/.envrc ] && cat "$mydir"/.envrc
+env
 echo PWD="$mydir"
 ```
 
 ## list sessions names
-
 
 You can define a list of new session names via `~/.config/vmux/hooks/list_sessions_names.sh`
 The script just needs to output session names one by line.

@@ -125,7 +125,7 @@ fn save_with_baus(val: String) -> Result<Vec<String>, Box<dyn Error>> {
         action: baus::Action::Save,
         value: baus::SavedValue::Timestamp,
         desc: true,
-        cleanup: false,
+        cleanup: true,
     };
     let cache_file_path = baus::get_cache_file_path(&args)?;
     let lines_backup = baus::get_lines_backup(&cache_file_path)?;
