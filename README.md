@@ -6,14 +6,15 @@ Demo video:
 
 [![Demo](https://img.youtube.com/vi/CnLlT0Wd_wY/0.jpg)](https://www.youtube.com/watch?v=CnLlT0Wd_wY)
 
-## trying it with docker
+# try it with docker
+
+Build (will take a few minutes) and then run demo container:
 
 ```bash
-$ docker build docker/ # => will return "Successfully built ${image_hash}"
-$ docker run -it ${image_hash}
+docker run -it $(docker build -q docker)
 ```
 
-# install
+# install 
 
 An example of actual installation/customization can be found in docker/setup-alpine.sh.
 

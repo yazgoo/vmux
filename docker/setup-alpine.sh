@@ -16,7 +16,7 @@ call plug#end()
 EOF
 
 # install plugin
-nvim +PlugInstall +qa
+nvim --headless +PlugInstall +qa
 
 # create dev directories
 mkdir -p ~/dev/project_0 ~/dev/project_1
