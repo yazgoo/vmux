@@ -66,7 +66,7 @@ it takes the session name as argument.
 For example, this script will print the content of envrc
 and set working directory to `~/dev/$1` (via `PWD` line)
 
-```
+```bash
 mydir=$HOME/dev/"$1"
 [ -e "$mydir"/.envrc ] && cat "$mydir"/.envrc
 env
@@ -80,7 +80,7 @@ The script just needs to output session names one by line.
 
 For example, this script will list all directories names in `~/dev`
 
-```
+```bash
 find -L ~/dev -maxdepth 1 -type d | while read d; do basename $d; done
 ```
 
