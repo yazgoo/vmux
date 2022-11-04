@@ -6,7 +6,16 @@ Demo video:
 
 [![Demo](https://img.youtube.com/vi/CnLlT0Wd_wY/0.jpg)](https://www.youtube.com/watch?v=CnLlT0Wd_wY)
 
+## trying it with docker
+
+```bash
+$ docker build docker/ # => will return "Successfully built ${image_hash}"
+$ docker run -it ${image_hash}
+```
+
 # install
+
+An example of actual installation/customization can be found in docker/setup-alpine.sh.
 
 You will need rust and cargo [installed](https://www.rust-lang.org/tools/install).
 
@@ -37,7 +46,8 @@ Run `:help vmux` from within vim for more in depth help.
 
 You can detach from the session with ^g
 
-After detaching / or quitting vim, you will be prompted, via sk to:
+After detaching / or quitting vim, you will be prompted to:
+
 - switch session
 - create a new session
 - exit
@@ -45,7 +55,6 @@ After detaching / or quitting vim, you will be prompted, via sk to:
 # customizing
 
 ## session name
-
 
 You can define a custom way to setup a new session via `~/.config/vmux/hooks/session_name.sh`
 The script just needs to print environment variables of the form (`env` command will do that):
@@ -55,7 +64,7 @@ key=value
 it takes the session name as argument.
 
 For example, this script will print the content of envrc
-and set working directory to `~/dev/$1`
+and set working directory to `~/dev/$1` (via `PWD` line)
 
 ```
 mydir=$HOME/dev/"$1"
@@ -79,7 +88,7 @@ find -L ~/dev -maxdepth 1 -type d | while read d; do basename $d; done
 
 You can put images which will be used as wallpapers inside `~/.config/vmux/wallpapers/`.
 
-## tabbar
+## extra: tabbar
 
 Having a nice tabbar (based on [Caagr98/c98tabbar.vim](https://github.com/Caagr98/c98tabbar.vim)):
 
@@ -91,16 +100,4 @@ Plug 'yazgoo/vmux-c98tabbar'
 Leave terminal insert mode by typing escap twice: 
 ```vimscript
 tnoremap <Esc><Esc> <C-\><C-n>
-```
-
-## detailed setup notes
-
-start docker container
-
-```bash
-docker run -v $PWD/setup-alpine.sh:/setup.sh -it --entrypoint bash rust
-# after entering docker, let's run setup script
-/setup.sh
-# setup done, let's start vmux
-vmux new
 ```
