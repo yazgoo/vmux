@@ -1,6 +1,6 @@
 [package]
 name = "vmux"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["yazgoo"]
 description = "Fuzzy Finder in rust!"
 documentation = "https://docs.rs/vmux"
@@ -24,4 +24,4 @@ parity-tokio-ipc = "0.9"
 tokio = "1"
 tokio-util = { version = "0.7", features = [ "compat" ] }
 dirs = "4.0"
-diss = "0.1.1"
+diss = "0.1.2"

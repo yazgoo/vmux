@@ -493,9 +493,9 @@ dependencies = [
 
 [[package]]
 name = "diss"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ef2e40f8255263e01bc081c51b8b05ce9e837d14912c4e4ad98d9fdd8873565"
+checksum = "d93ea5c840fa4d87c43a0c0a5b17c3ce3e7e6a6ebd2e583afa9803870c6bd9a7"
 dependencies = [
  "anyhow",
  "bincode",
@@ -1769,7 +1769,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "vmux"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "atty",
  "baus",
