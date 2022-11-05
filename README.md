@@ -2,7 +2,11 @@
 
 Helper to use vim/neovim as a terminal multiplexer
 
-Demo video:
+Demo of session switching:
+
+[![Demo](https://img.youtube.com/vi/TIZZL5dFtQc/0.jpg)](https://www.youtube.com/watch?v=TIZZL5dFtQc)
+
+Demo video (CLI + functionalities inside vim):
 
 [![Demo](https://img.youtube.com/vi/CnLlT0Wd_wY/0.jpg)](https://www.youtube.com/watch?v=CnLlT0Wd_wY)
 
