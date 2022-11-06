@@ -292,7 +292,6 @@ fn start_session(session_prefix: String) -> Result<(), Box<dyn Error>> {
     let id = format!("{}-{}", session_prefix, since_the_epoch.as_secs());
     let server_file = format!("/tmp/vim-server-{}", id);
     let session_name = format!("{}{}", id, session_suffix);
-    // TODO select vim/neovim via VMUX_EDITOR?
     let env_regx = Regex::new(r"^([^=]*)=(.*)$")?;
     let lines: Vec<String> = session_name_hook(session_prefix)?;
     let mut env_vars: HashMap<String, String> = lines
@@ -307,13 +306,24 @@ fn start_session(session_prefix: String) -> Result<(), Box<dyn Error>> {
         .collect();
     env_vars.insert("vmux_server_file".to_string(), server_file.clone());
 
-    let command = vec![
-        "nvim".to_string(),
-        "--cmd".to_string(),
-        "let g:confirm_quit_nomap = 0".to_string(),
-        "--cmd".to_string(),
-        format!("let g:server_addr = serverstart('{}')", server_file),
-    ];
+    let vmux_editor = env::var("VMUX_EDITOR").unwrap_or("nvim".to_string());
+    let command = if vmux_editor.contains("nvim") {
+        vec![
+            vmux_editor,
+            "--cmd".to_string(),
+            "let g:confirm_quit_nomap = 0".to_string(),
+            "--cmd".to_string(),
+            format!("let g:server_addr = serverstart('{}')", server_file),
+        ]
+    } else {
+        vec![
+            vmux_editor,
+            "--cmd".to_string(),
+            "let g:confirm_quit_nomap = 0".to_string(),
+            "--servername".to_string(),
+            server_file,
+        ]
+    };
     diss::run(&session_name, &command, env_vars, Some("g".into()))?;
     selector(session_name)
 }
