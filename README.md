@@ -6,11 +6,11 @@ Helper to use vim/neovim as a terminal multiplexer
 
 session switching:
 
-[!<img src=https://img.youtube.com/vi/TIZZL5dFtQc/0.jpg width=200/>](https://www.youtube.com/watch?v=TIZZL5dFtQc)
+[<img src=https://img.youtube.com/vi/TIZZL5dFtQc/0.jpg width=200/>](https://www.youtube.com/watch?v=TIZZL5dFtQc)
 
 CLI + functionalities inside vim:
 
-[!<img src=https://img.youtube.com/vi/CnLlT0Wd_wY/0.jpg width=200/>](https://www.youtube.com/watch?v=CnLlT0Wd_wY)
+[<img src=https://img.youtube.com/vi/CnLlT0Wd_wY/0.jpg width=200/>](https://www.youtube.com/watch?v=CnLlT0Wd_wY)
 
 # try it with docker
 
