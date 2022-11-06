@@ -2,15 +2,15 @@
 
 Helper to use vim/neovim as a terminal multiplexer
 
-# demos
+# video demos
 
-video of session switching:
+session switching:
 
-[![Demo](https://img.youtube.com/vi/TIZZL5dFtQc/0.jpg)](https://www.youtube.com/watch?v=TIZZL5dFtQc)
+[!<img src=https://img.youtube.com/vi/TIZZL5dFtQc/0.jpg width=200/>](https://www.youtube.com/watch?v=TIZZL5dFtQc)
 
-video (CLI + functionalities inside vim):
+CLI + functionalities inside vim:
 
-[![Demo](https://img.youtube.com/vi/CnLlT0Wd_wY/0.jpg)](https://www.youtube.com/watch?v=CnLlT0Wd_wY)
+[!<img src=https://img.youtube.com/vi/CnLlT0Wd_wY/0.jpg width=200/>](https://www.youtube.com/watch?v=CnLlT0Wd_wY)
 
 # try it with docker
 
