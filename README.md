@@ -22,7 +22,7 @@ docker run -it $(docker build -q docker)
 
 # install 
 
-An example of actual installation/customization can be found in docker/setup-alpine.sh.
+An example of actual installation/customization can be found in [Dockerfile](docker/Dockerfile).
 
 You will need rust and cargo [installed](https://www.rust-lang.org/tools/install).
 

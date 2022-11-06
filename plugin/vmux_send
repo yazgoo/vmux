@@ -1,1 +1,1 @@
-$(dirname $(dirname $0))/target/release/vmux send "$@"
+vmux send "$@"

@@ -1,4 +1,10 @@
-export PATH="$PATH:$(dirname "$0")"
+if [ -z "$BASH_SOURCE" ]
+then
+  export PATH="$PATH:$(dirname "$0")"
+else
+  export PATH="$PATH:$(dirname "$BASH_SOURCE")"
+fi
+
 first_arg_possibilities="new list attach"
 
 function list_vmux_sessions() {

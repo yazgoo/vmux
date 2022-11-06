@@ -23,3 +23,5 @@ set statusline=
 set statusline+=%F
 set statusline+=%=
 set statusline+=%{substitute(getcwd(),'^.*/','','')}
+
+set shell=/bin/bash
