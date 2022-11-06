@@ -53,22 +53,36 @@ source ~/.config/nvim/plugged/vmux/plugin/setup_vmux.sh vim
 
 # usage
 
-Run `vmux` for vmux command usage help
+## interactive usage
+
+`vmux new` will start vmux in interactive mode.
+
+You'll be prompted to:
+
+- create a new session (via `New: ...`, or `New`)
+- exit (via `Detach`)
+- open an existing session
+
+You can leave current session with `CTRL+g`.
+(you can change default escape key from `CTRL+a` (with `-e a`) to `CTRL+g` ).
+
+## usage within vim / neovim
+
+Within vim/neovim, vmux provides integration between the vim/neovim and terminal.
 Run `:help vmux` from within vim for more in depth help.
+see [docker/init.vim](docker/init.vim) for an example of configuration.
 
-# detaching
+## cli usage
 
-You can detach from the session with ^g
+you can also manage sessions from the CLI: 
 
-After detaching / or quitting vim, you will be prompted to:
-
-- switch session
-- create a new session
-- exit
+- `vmux new <session_name>` to create a new session name
+- `vmux list` to list session names
+- `vmux attach <full_session_name>` to attach to a running session (as per `vmux list`)
 
 # customizing
 
-## session name
+## session setup
 
 You can define a custom way to setup a new session via `~/.config/vmux/hooks/session_name.sh`
 The script just needs to print environment variables of the form (`env` command will do that):
@@ -106,3 +120,14 @@ Leave terminal insert mode by typing escap twice:
 ```vimscript
 tnoremap <Esc><Esc> <C-\><C-n>
 ```
+
+# architecture
+
+## crates it relies on
+
+This project relies on the following fundamentals crates:
+
+- wallpapers are displayed via [blockish](https://github.com/yazgoo/blockish/)
+- fuzzy prompting is done via [skim](https://github.com/lotabout/skim/)
+- terminal session management: [diss](https://github.com/yazgoo/diss)
+- historized ordering of selections (BAcked Up Sorter) : [baus](https://github.com/yazgoo/baus) 

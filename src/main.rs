@@ -1,6 +1,7 @@
 extern crate baus;
 extern crate skim;
 use blockish::render_image_fitting_terminal;
+use clap::Parser;
 use nvim_rs::rpc::handler::Dummy;
 use nvim_rs::Neovim;
 use parity_tokio_ipc::{Connection, Endpoint};
@@ -183,14 +184,14 @@ fn list(previous_session_name: String) -> Result<Vec<String>, Box<dyn Error>> {
     Ok(res)
 }
 
-fn attach(session: String) -> Result<(), Box<dyn Error>> {
+fn attach(session: String, escape_key: Option<String>) -> Result<(), Box<dyn Error>> {
     let empty = Vec::new();
     let empty2 = HashMap::new();
-    diss::run(&session, &empty, empty2, Some("g".into()))?;
-    selector(session)
+    diss::run(&session, &empty, empty2, escape_key.clone())?;
+    selector(session, escape_key)
 }
 
-fn run_switch_result(res: String) -> Result<(), Box<dyn Error>> {
+fn run_switch_result(res: String, escape_key: Option<String>) -> Result<(), Box<dyn Error>> {
     let new2_reg = Regex::new(r"^New: ")?;
     if res == "Detach" {
         println!("done")
@@ -199,18 +200,21 @@ fn run_switch_result(res: String) -> Result<(), Box<dyn Error>> {
         println!("enter session name:");
         std::io::stdin().read_line(&mut line)?;
         trim_newline(&mut line);
-        start_session(line)?;
+        start_session(line, escape_key)?;
     } else if new2_reg.is_match(&res) {
-        start_session(res.replace("New: ", ""))?;
+        start_session(res.replace("New: ", ""), escape_key)?;
     } else {
         let re = Regex::new(".*\t")?;
         save_with_baus(res.clone())?;
-        attach(re.replace(&res, "").to_string())?;
+        attach(re.replace(&res, "").to_string(), escape_key)?;
     }
     Ok(())
 }
 
-pub fn selector(previous_session_name: String) -> Result<(), Box<dyn Error>> {
+pub fn selector(
+    previous_session_name: String,
+    escape_key: Option<String>,
+) -> Result<(), Box<dyn Error>> {
     print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
 
     let lines = list(previous_session_name)?;
@@ -273,7 +277,7 @@ pub fn selector(previous_session_name: String) -> Result<(), Box<dyn Error>> {
         .unwrap_or_else(Vec::new);
     for item in selected_items.iter() {
         let res = item.output();
-        run_switch_result(res.to_string())?;
+        run_switch_result(res.to_string(), escape_key.clone())?;
     }
     Ok(())
 }
@@ -282,7 +286,7 @@ fn help() {
     println!("please provide an action (new|attach|list)");
 }
 
-fn start_session(session_prefix: String) -> Result<(), Box<dyn Error>> {
+fn start_session(session_prefix: String, escape_key: Option<String>) -> Result<(), Box<dyn Error>> {
     let start = SystemTime::now();
     let since_the_epoch = start
         .duration_since(UNIX_EPOCH)
@@ -324,8 +328,8 @@ fn start_session(session_prefix: String) -> Result<(), Box<dyn Error>> {
             server_file,
         ]
     };
-    diss::run(&session_name, &command, env_vars, Some("g".into()))?;
-    selector(session_name)
+    diss::run(&session_name, &command, env_vars, escape_key.clone())?;
+    selector(session_name, escape_key)
 }
 
 async fn send(command: &str) -> Result<(), Box<dyn Error>> {
@@ -369,33 +373,46 @@ async fn edit(edited_file_path: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn run_or_selector(f: impl Fn(String) -> Result<(), Box<dyn Error>>) -> Result<(), Box<dyn Error>> {
-    match std::env::args().nth(2) {
-        Some(session_prefix) => f(session_prefix),
-        None => selector("".to_string()),
+fn run_or_selector(
+    f: impl Fn(String, Option<String>) -> Result<(), Box<dyn Error>>,
+    args: Args,
+) -> Result<(), Box<dyn Error>> {
+    match args.command.get(1) {
+        Some(session_prefix) => f(session_prefix.to_string(), args.escape_key),
+        None => selector("".to_string(), args.escape_key),
     }
+}
+
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+    // escape key
+    #[clap(short, long, value_parser)]
+    escape_key: Option<String>,
+
+    // command
+    command: Vec<String>,
 }
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
-    let arg1 = std::env::args().nth(1);
+    let args = Args::parse();
+    let arg1 = args.command.get(0);
     match arg1 {
         Some(action) => {
             if action == "select" {
-                run_or_selector(selector)?;
+                run_or_selector(selector, args)?;
             } else if action == "attach" {
-                run_or_selector(attach)?;
+                run_or_selector(attach, args)?;
             } else if action == "new" {
-                run_or_selector(start_session)?;
+                run_or_selector(start_session, args)?;
             } else if action == "list" {
                 show_session_list()?;
             } else if action == "send" {
-                let args: Vec<String> = env::args().collect();
-                let command = &args[2..].join(" ");
+                let command = &args.command[1..].join(" ");
                 send(command).await?;
             } else if action == "edit" {
-                let args: Vec<String> = env::args().collect();
-                let edited_file_path = &args[2..].join(" ");
+                let edited_file_path = &args.command[1..].join(" ");
                 edit(edited_file_path).await?;
             } else {
                 help();
