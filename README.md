@@ -55,6 +55,8 @@ source ~/.config/nvim/plugged/vmux/plugin/setup_vmux.sh vim
 
 ## interactive usage
 
+See [video demo](https://www.youtube.com/watch?v=TIZZL5dFtQc).
+
 `vmux new` will start vmux in interactive mode.
 
 You'll be prompted to:
@@ -67,6 +69,8 @@ You can leave current session with `CTRL+g`.
 (you can change default escape key from `CTRL+a` (with `-e a`) to `CTRL+g` ).
 
 ## usage within vim / neovim
+
+See [video demo](https://www.youtube.com/watch?v=TIZZL5dFtQc).
 
 Within vim/neovim, vmux provides integration between the vim/neovim and terminal.
 Run `:help vmux` from within vim for more in depth help.
