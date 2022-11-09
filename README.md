@@ -1,5 +1,8 @@
 <img src="vmux.png" alt="vmux logo" width="200"/>
 
+[![Discord](https://img.shields.io/badge/discord--blue?logo=discord)](https://discord.gg/F684Y8rYwZ)
+[![Crates.io](https://img.shields.io/crates/v/vmux?style=flat-square)](https://crates.io/crates/vmux)
+
 Helper to use vim/neovim as a terminal multiplexer
 
 # video demos
@@ -27,53 +30,46 @@ docker run -it yazgoo/vmux:master
 
 see [interactive usage](#interactive-usage) for more info on how to use it.
 
-# install 
+A full example of actual installation/customization can be found in [Dockerfile](docker/Dockerfile).
 
-An example of actual installation/customization can be found in [Dockerfile](docker/Dockerfile).
+# install 
 
 You will need rust and cargo [installed](https://www.rust-lang.org/tools/install).
 
-Then install the following vim plugin, with a hook to install vmux crate: 
+Install the following vim plugin (e.g. here with vimplug), with a hook to install vmux crate: 
 
 ```vimscript
 Plug 'yazgoo/vmux', {'do': 'cargo install vmux' }
 ```
 
-Then add the following to your .zshrc or .bashrc
+Add the following to your `.zshrc` or `.bashrc` (replace `<your_editor>` with vim or nvim (default)).
+For vim you'll need it compiled with `+clientserver` flag:
 
 ```bash
-source ~/.config/nvim/plugged/vmux/plugin/setup_vmux.sh
-```
-
-Or if you want to use vim instead of nvim (you need vim compiled with `+clientserver` flag) :
-
-```bash
-source ~/.config/nvim/plugged/vmux/plugin/setup_vmux.sh vim
+source ~/.config/nvim/plugged/vmux/plugin/setup_vmux.sh <your_editor>
 ```
 
 # usage
 
 ## interactive usage
 
-See [video demo](https://www.youtube.com/watch?v=TIZZL5dFtQc).
-
-`vmux new` will start vmux in interactive mode.
+See [video demo](https://www.youtube.com/watch?v=TIZZL5dFtQc). `vmux new` will start vmux in interactive mode.
 
 You'll be prompted to:
 
-- create a new session (via `New: ...`, or `New`)
+- create a new session (via `New: ...` (pre-named), or `New` (custom-named))
 - exit (via `Detach`)
 - open an existing session
 
 You can leave current session with `CTRL+g`.
-(you can change default escape key from `CTRL+a` (with `-e a`) to `CTRL+g` ).
+(you can change default escape key from `CTRL+g` (with `-e a`) to `CTRL+a` ).
 
 ## usage within vim / neovim
 
 See [video demo](https://www.youtube.com/watch?v=TIZZL5dFtQc).
 
-Within vim/neovim, vmux provides integration between the vim/neovim and terminal.
-Run `:help vmux` from within vim for more in depth help.
+Within vim, vmux provides integration between vim and terminal.
+Run `:help vmux` from within vim for more [in depth help](doc/vmux.txt).
 see [docker/init.vim](docker/init.vim) for an example of configuration.
 
 ## cli usage
@@ -86,26 +82,22 @@ you can also manage sessions from the CLI:
 
 # customizing
 
+For an optimal experience, you should at least add 
+`list_sessions_names.sh` and `session_name.sh` hook scripts described below.
+
 ## session setup
 
-You can define a custom way to setup a new session via `~/.config/vmux/hooks/session_name.sh`
-The script just needs to print environment variables of the form (`env` command will do that):
+You can define a custom way to setup a new session via `~/.config/vmux/hooks/session_name.sh`,
+which takes the session name as argument.
+The script just needs to print environment variables of the form `key=value` (`env` command will do that).
 
-key=value
-
-it takes the session name as argument.
-
-For example, this script will print the content of envrc
-and set working directory to `~/dev/$1` (via `PWD` line)
-
-see [docker](docker/session_name.sh) for an example.
+For example, [this script](docker/session_name.sh) will print the content of `.envrc`
+and set working directory to `~/dev/$1` (via `PWD` line).
 
 ## list sessions names
 
 You can define a list of new session names via `~/.config/vmux/hooks/list_sessions_names.sh`
-The script just needs to output session names one by line.
-
-see [docker](docker/list_sessions_names.sh) for an example.
+The script just needs to output session names one by line, see [docker](docker/list_sessions_names.sh) for an example.
 
 ## wallpaper
 
@@ -113,7 +105,7 @@ You can put images which will be used as wallpapers inside `~/.config/vmux/wallp
 
 ## extra: tabbar
 
-Having a nice tabbar (based on [Caagr98/c98tabbar.vim](https://github.com/Caagr98/c98tabbar.vim)):
+A nice tabbar (based on [Caagr98/c98tabbar.vim](https://github.com/Caagr98/c98tabbar.vim)):
 
 ```vimscript
 Plug 'git@github.com:yazgoo/c98tabbar.vim'
@@ -124,7 +116,6 @@ Leave terminal insert mode by typing escap twice:
 ```vimscript
 tnoremap <Esc><Esc> <C-\><C-n>
 ```
-
 # architecture
 
 ## crates it relies on
@@ -134,4 +125,4 @@ This project relies on the following fundamentals crates:
 - wallpapers are displayed via [blockish](https://github.com/yazgoo/blockish/)
 - fuzzy prompting is done via [skim](https://github.com/lotabout/skim/)
 - terminal session management: [diss](https://github.com/yazgoo/diss)
-- historized ordering of selections (BAcked Up Sorter) : [baus](https://github.com/yazgoo/baus) 
+- historized ordering of selections (BAcked Up Sorter) : [baus](https://github.com/yazgoo/baus)
