@@ -26,11 +26,14 @@ RUN echo 'source ~/.local/share/nvim/plugged/vmux/plugin/setup_vmux.sh' >> ~/.ba
 RUN mkdir ~/.config/vmux/wallpapers
 RUN cp ~/.local/share/nvim/plugged/vmux/vmux.png ~/.config/vmux/wallpapers
 
+# create example dev directories
+RUN mkdir -p ~/dev/first_project ~/dev/second_project
+
+# reduce image size
 RUN rm -rf ~/.cargo
 RUN apt clean -y
 RUN apt remove -y curl git
-# create example dev directories
-RUN mkdir -p ~/dev/first_project ~/dev/second_project
+RUN rustup self uninstall -y
 
 # start vmux with container
 ENTRYPOINT ["/bin/bash", "-c", "sleep 0.1 && vmux new"]
