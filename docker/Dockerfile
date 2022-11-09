@@ -32,8 +32,8 @@ RUN mkdir -p ~/dev/first_project ~/dev/second_project
 # reduce image size
 RUN rm -rf ~/.cargo
 RUN apt clean -y
-RUN apt remove -y curl git
-RUN rustup self uninstall -y
+RUN apt remove -y curl
+ RUN rm -rf /usr/local/cargo/registry /usr/local/rustup/
 
 # start vmux with container
 ENTRYPOINT ["/bin/bash", "-c", "sleep 0.1 && vmux new"]
