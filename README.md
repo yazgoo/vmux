@@ -19,13 +19,13 @@ CLI + functionalities inside vim:
 </tr>
 </table>
 
-# try it with docker
-
-Build (will take a few minutes) and then run demo container:
+# test it now with docker
 
 ```bash
-docker run -it $(docker build -q docker)
+docker run -it yazgoo/vmux:master
 ```
+
+see [interactive usage](#interactive-usage) for more info on how to use it.
 
 # install 
 
