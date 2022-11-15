@@ -290,7 +290,6 @@ pub fn selector(
     session_group: Option<String>,
 ) -> Result<(), Box<dyn Error>> {
     print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
-
     let lines = list(
         previous_session_name,
         configuration_directory_path.clone(),
@@ -328,10 +327,12 @@ pub fn selector(
     let mut options = SkimOptions::<'_> {
         no_clear_start: true,
         nosort: true,
+        no_mouse: false,
         ..Default::default()
     };
     options.no_clear_start = true;
     options.nosort = true;
+    options.no_mouse = false;
     let margin = format!("{},{},{},{}", margin_v, margin_r, margin_v, margin_l);
     options.margin = Some(&margin);
     if let Some(img) = random_image(configuration_directory_path.clone())? {

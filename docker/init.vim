@@ -2,6 +2,12 @@ call plug#begin()
 Plug 'yazgoo/vmux', {'do': 'cargo install vmux' }
 Plug  'preservim/vim-markdown' 
 Plug 'dhruvasagar/vim-zoom'
+let g:floaterm_position = 'center'
+let g:floaterm_width = 1.0
+hi NormalFloat guibg=None
+set winblend=0
+let g:floaterm_height = 1.0
+Plug 'voldikss/vim-floaterm'
 call plug#end()
 
 
