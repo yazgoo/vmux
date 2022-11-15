@@ -1,34 +1,223 @@
 ---
-disclaimer: |
-  blah blalh blih
-The old times: |
-  (no term in vim)
-revolution step 1: |
-  terminal in neovim
-revolution step 2: |
-  terminal in vim8
-Main limitation: |
-  copy terminal buffer with line wrapping
+vmux:
+  split: o
+  img: forest.png
+  text: |
+    a 5 year journey in using neovim as a terminal multiplexer
+    ==========================================================
 
-  https://github.com/ebuzzing/terraform-infrastructure/pull/14499
-  https://github.com/neovim/neovim/issues/2514
-  https://github.com/neovim/neovim/pull/11014
-I decide to use it: |
-  https://yazgoo.github.io/blag/neovim/terminal/multiplexer/tmux/2017/11/29/neovim-one-week-without-tmux.html
-basic functionalities: |
-  - exit terminal easily
-  - zoom
-  - copy pasting
-  - completion
-  - detach (abduco)
-  - control vim within terminal via server mode
-vim / neovim server mode: |
-  TODO
-2018 vmux release: |
-  https://linuxfr.org/users/yazgoo/journaux/vmux-un-plugin-pour-utiliser-neovim-en-tant-que-multiplexer-de-terminal
-2021 vmux release: |
-  https://www.reddit.com/r/neovim/comments/rs5ivq/vmux_a_plugin_to_use_neovim_as_a_terminal/
-2022 1: |
-  add support for multiple vim instances
-2022 2: |
-  rust rewrite
+    Author: Olivier 'Yazgoo' Abdesselam
+presentation:
+  split: O
+  img: capy.png
+  text: |
+    Who am I: 
+      Olivier 'Yazgoo' Abdesselam 
+      Data engineer @teads.tv
+
+    Disclaimer:
+
+      - I am just a basic vim user
+      - I like to toy with terminal emulators 🖥 and rust 🦀  
+The old times:
+  split: o
+  img: tmux-logo-medium.png
+  text: |
+    - no terminal in (neo)vim
+    - I used tmux 💕 + vim
+    - tmux provides:
+      - splits
+      - tabs
+      - detach
+revolution step 1: 
+  split: o
+  term: bash
+  text: |
+    2015: https://github.com/neovim/neovim/pull/2076
+    `:help terminal`
+
+    ```
+    Terminal emulator				*terminal* *terminal-emulator*
+
+    Nvim embeds a VT220/xterm terminal emulator based on libvterm. The terminal is
+    presented as a special 'buftype', asynchronously updated as data is received
+    from the connected program.
+
+    ```
+revolution step 2:
+  split: O
+  img: vimlog.png
+  text: |
+    2018: terminal in vim8
+    
+    `:help terminal`
+
+    ```
+    *terminal.txt*	For Vim version 9.0.  Last change: 2022 Oct 10
+
+
+          VIM REFERENCE MANUAL	  by Bram Moolenaar
+
+
+    Terminal window support				*terminal* *terminal-window*
+
+    The terminal feature is optional, use this to check if your Vim has it: >
+      echo has('terminal')
+    If the result is "1" you have it.
+    ```
+Main limitation:
+  split: O
+  term: presentation_root/long_lines_limit
+  text: |
+    copy terminal buffer with line wrapping
+
+    - https://github.com/neovim/neovim/issues/2514
+    - https://github.com/neovim/neovim/pull/11014
+I decide to use it:
+  split: o
+  term: presentation_root/terminal_text_to_copy
+  text : |
+    2017: https://yazgoo.github.io/blag/neovim/terminal/multiplexer/tmux/2017/11/29/neovim-one-week-without-tmux.html
+
+    - exit terminal easily (double escape): `tnoremap <Esc><Esc> <C-\><C-n>`
+    - zoom: Plug 'dhruvasagar/vim-zoom'
+    - copy pasting: `y` `p` work, can use `+` register.
+    - completion: `^n`
+    - detach : just wrap your session in dtach, screen, abduco: https://github.com/martanne/abduco
+neovim server mode:
+  split: o
+  term: presentation_root/demo_server_mode
+  text: |
+    - control vim within terminal via server mode:
+        ```vim
+        let g:server_addr = serverstart('/tmp/vim-server')
+        ```
+
+        define a CLI to send vim command `vmux-send`
+        ```python
+        import neovim
+        import sys
+        nvim = neovim.attach('socket', path='/tmp/vim-server')
+        nvim.command(" ".join(sys.argv[1:]))
+        ```
+
+        in `bashrc`:
+        ```bash
+        # define aliases
+        for cmd in split vsplit e tabnew
+        do
+          alias $cmd="vmux-send :$cmd"
+        done
+        # cd from within terminal changes vim directory !
+        function cd() {  
+          builtin cd "$@";
+          # if the parent process is nvim, do a vim cd 
+          (ps -o comm= $PPID | grep nvim > /dev/null) && vmux-send :cd "$@"
+        }
+        export cd
+        ```
+
+    `:help serverstart`
+    ```
+    serverstart([{address}])				*serverstart()*
+        Opens a socket or named pipe at {address} and listens for
+        |RPC| messages. Clients can send |API| commands to the
+        returned address to control Nvim.
+    ```
+alias:
+  text: |
+      ```
+      #!/usr/bin/sh
+      alias vmux="(abduco -l|grep nvim-session) || rm -f /tmp/vim-server;\
+                  abduco -e '^g' -A nvim-session nvim --cmd \
+                  \"let g:server_addr = serverstart('/tmp/vim-server')\""
+      ```
+
+      And thus, vmux was born 🎉  
+2018 vmux release:
+  split: o
+  term: presentation_root/run_asciinema
+
+  text: |
+    https://linuxfr.org/users/yazgoo/journaux/vmux-un-plugin-pour-utiliser-neovim-en-tant-que-multiplexer-de-terminal
+2021 vmux release:
+  text: |
+    https://www.reddit.com/r/neovim/comments/rs5ivq/vmux_a_plugin_to_use_neovim_as_a_terminal/
+
+    https://www.youtube.com/watch?time_continue=80&v=CnLlT0Wd_wY&feature=emb_title
+2022, why change ?:
+  text: |
+    add support for multiple vim instances
+
+    I use more and more LSPs
+    scala: https://scalameta.org/metals/
+    rust: https://github.com/rust-analyzer/lsp-server
+
+    multiple LSP in one vim instance was not a good experience.
+
+    allow to switch easily between instances with fzf
+
+    FZF + baus + abduco + blockish
+FZF:
+  split: o
+  term: presentation_root/fzf_demo
+  text: |
+    FZF is a fuzzy finder written in go
+    https://github.com/junegunn/fzf
+
+    ```bash
+    while true
+    do
+      result=$(echo "dog
+      hamster
+      capybara
+      cat" | fzf --header="what's your favorite" | sed 's/.* //' | name_to_emoji)
+      rain_emoji $result
+      echo thanks
+      read
+    done
+    ```
+customization:
+  text: |
+    For an optimal experience, you should at least add 
+    `list_sessions_names.sh` and `session_name.sh` hook scripts described below.
+
+    ## session setup
+
+    You can define a custom way to setup a new session via `~/.config/vmux/hooks/session_name.sh`,
+    which takes the session name as argument.
+    The script just needs to print environment variables of the form `key=value` (`env` command will do that).
+
+    For example, [this script](docker/session_name.sh) will print the content of `.envrc`
+    and set working directory to `~/dev/$1` (via `PWD` line).
+
+    ## list sessions names
+
+    You can define a list of new session names via `~/.config/vmux/hooks/list_sessions_names.sh`
+    The script just needs to output session names one by line, see [docker](docker/list_sessions_names.sh) for an example.
+
+    ## wallpaper
+
+    You can put images which will be used as wallpapers inside `~/.config/vmux/wallpapers/`.
+
+
+diss:
+  text: |
+    Diss:
+
+    - dissociates a program from current terminal
+    - is like [dtach](https://github.com/crigler/dtach), [abduco](https://github.com/martanne/abduco) (think [GNU screen](https://www.gnu.org/software/screen/) or [tmux](https://github.com/tmux/tmux) without multiplexing)
+    - is also a rust crate you can easily integrate
+2022 2:
+  text: |
+    rust rewrite
+
+    before: multiple binaries (fzf + baus + abduco + blockish)
+    after: one self-contained binary:
+
+    This project relies on the following fundamentals crates:
+
+    - wallpapers are displayed via [blockish](https://github.com/yazgoo/blockish/)
+    - fuzzy prompting is done via [skim](https://github.com/lotabout/skim/)
+    - terminal session management: [diss](https://github.com/yazgoo/diss)
+    - historized ordering of selections (BAcked Up Sorter) : [baus](https://github.com/yazgoo/baus)

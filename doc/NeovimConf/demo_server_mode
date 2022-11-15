@@ -1,0 +1,23 @@
+#!/bin/env ruby
+i = 0
+loop do
+  puts `clear`
+  i_100 = i % 110
+  if i_100 < 55
+    puts "  #{" " * (i_100)}query"
+  else
+    puts
+  end
+  puts "
+  ╭────────╮                                          ╭────────╮
+  │ Client │ ────────────> Unix Socket <───────────── │ Neovim │
+  ╰────────╯                                          ╰────────╯
+  "
+  if i_100 > 55
+    puts "  #{" " * (110 - i_100)}response"
+  else
+    puts
+  end
+  i += 1
+  sleep 0.05
+end

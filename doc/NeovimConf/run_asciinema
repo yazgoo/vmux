@@ -1,0 +1,8 @@
+#!/bin/env sh
+while true
+do
+  echo press enter to start...
+  read
+  asciinema play $(dirname $0)/../asciinema.cast -s 3
+  echo "done !"
+done

@@ -1,0 +1,6 @@
+#!/bin/env sh
+path=/tmp/$(date +%s).md
+$(dirname $0)/tomd > $path
+CHROME_PATH=~/Downloads/Chromium-107.0.5297.0.glibc2.17-x86_64.AppImage marp $path -o $path.pdf
+echo $path.pdf
+zathura $path.pdf

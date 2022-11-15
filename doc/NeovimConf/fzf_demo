@@ -1,0 +1,50 @@
+#!/bin/env bash
+
+rain_emoji() {
+  emoji="$1"
+  while true
+  do
+    cols=$(tput cols)
+    place=$(($RANDOM % ($cols - 1) )) 
+    for i in $(seq 1 $place); do echo -n " "; done
+    echo "$emoji"
+    read -n 1 -t 0.1 input
+    if [[ $input = "q" ]] || [[ $input = "Q" ]] 
+    then
+      echo # to get a newline after quitting
+      break
+    fi
+  done
+}
+
+name_to_emoji() {
+  read name
+  case $name in
+    hamster)
+      echo 🐹
+  ;;
+    dog)
+      echo 🐕  
+  ;;
+    cat)
+      echo 🐈  
+  ;;
+    capybara)
+      echo 🥔
+  ;;
+  *)
+    echo ❓   
+    ;;
+  esac
+}
+
+while true
+do
+  result=$(echo "dog
+  hamster
+  capybara
+  cat" | fzf --header="what's your favorite" | sed 's/.* //' | name_to_emoji)
+  rain_emoji $result
+  echo thanks
+  read
+done

@@ -75,22 +75,28 @@ fn random_image(
     }
 }
 
-fn list_sessions() -> Result<Vec<String>, Box<dyn Error>> {
-    let session_regx = Regex::new(r".*vmux-session.*")?;
+fn list_sessions(session_group: Option<String>) -> Result<Vec<String>, Box<dyn Error>> {
+    let session_regx = Regex::new(&format!(
+        ".*vmux-session{}.*",
+        session_group.unwrap_or_else(|| "".to_string())
+    ))?;
     Ok(diss::list_sessions()?
         .into_iter()
         .filter(|x| session_regx.is_match(x))
         .collect())
 }
 
-fn show_session_list() -> Result<(), Box<dyn Error>> {
-    for session in list_sessions()? {
+fn show_session_list(session_group: Option<String>) -> Result<(), Box<dyn Error>> {
+    for session in list_sessions(session_group)? {
         println!("{}", session);
     }
     Ok(())
 }
 
-fn list_sessions_with_baus(previous_session_name: String) -> Result<Vec<String>, Box<dyn Error>> {
+fn list_sessions_with_baus(
+    previous_session_name: String,
+    session_group: Option<String>,
+) -> Result<Vec<String>, Box<dyn Error>> {
     let args = baus::Args {
         name: "vmux".to_string(),
         action: baus::Action::Sort,
@@ -100,7 +106,7 @@ fn list_sessions_with_baus(previous_session_name: String) -> Result<Vec<String>,
     };
     let cache_file_path = baus::get_cache_file_path(&args)?;
     let mut lines_backup = baus::get_lines_backup(&cache_file_path)?;
-    let sessions_list = list_sessions()?;
+    let sessions_list = list_sessions(session_group)?;
     let sessions_list = baus::sort(&args, sessions_list, &mut lines_backup, &cache_file_path)?;
     let mut sessions_with_previous: Vec<String> = sessions_list
         .clone()
@@ -204,8 +210,9 @@ fn session_name_hook(
 fn list(
     previous_session_name: String,
     configuration_directory_path: Option<String>,
+    session_group: Option<String>,
 ) -> Result<Vec<String>, Box<dyn Error>> {
-    let mut res = list_sessions_with_baus(previous_session_name)?;
+    let mut res = list_sessions_with_baus(previous_session_name, session_group)?;
     let hook = list_sessions_name_hook(configuration_directory_path)?;
     let cmds = vec!["Detach".to_string(), "New".to_string()];
     res.extend(cmds);
@@ -217,17 +224,24 @@ fn attach(
     session: String,
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
+    session_group: Option<String>,
 ) -> Result<(), Box<dyn Error>> {
     let empty = Vec::new();
     let empty2 = HashMap::new();
     diss::run(&session, &empty, empty2, escape_key.clone())?;
-    selector(session, escape_key, configuration_directory_path)
+    selector(
+        session,
+        escape_key,
+        configuration_directory_path,
+        session_group,
+    )
 }
 
 fn run_switch_result(
     res: String,
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
+    session_group: Option<String>,
 ) -> Result<(), Box<dyn Error>> {
     let new2_reg = Regex::new(r"^New: ")?;
     if res == "Detach" {
@@ -237,12 +251,18 @@ fn run_switch_result(
         println!("enter session name:");
         std::io::stdin().read_line(&mut line)?;
         trim_newline(&mut line);
-        start_session(line, escape_key, configuration_directory_path)?;
+        start_session(
+            line,
+            escape_key,
+            configuration_directory_path,
+            session_group,
+        )?;
     } else if new2_reg.is_match(&res) {
         start_session(
             res.replace("New: ", ""),
             escape_key,
             configuration_directory_path,
+            session_group,
         )?;
     } else {
         let re = Regex::new(".*\t")?;
@@ -251,6 +271,7 @@ fn run_switch_result(
             re.replace(&res, "").to_string(),
             escape_key,
             configuration_directory_path,
+            session_group,
         )?;
     }
     Ok(())
@@ -260,10 +281,15 @@ pub fn selector(
     previous_session_name: String,
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
+    session_group: Option<String>,
 ) -> Result<(), Box<dyn Error>> {
     print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
 
-    let lines = list(previous_session_name, configuration_directory_path.clone())?;
+    let lines = list(
+        previous_session_name,
+        configuration_directory_path.clone(),
+        session_group.clone(),
+    )?;
 
     let s = termion::terminal_size()?;
     let columns = s.0;
@@ -327,6 +353,7 @@ pub fn selector(
             res.to_string(),
             escape_key.clone(),
             configuration_directory_path.clone(),
+            session_group.clone(),
         )?;
     }
     Ok(())
@@ -340,13 +367,17 @@ fn start_session(
     session_prefix: String,
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
+    session_group: Option<String>,
 ) -> Result<(), Box<dyn Error>> {
     let start = SystemTime::now();
     let since_the_epoch = start
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards");
 
-    let session_suffix = "-vmux-session";
+    let session_suffix = format!(
+        "-vmux-session{}",
+        session_group.clone().unwrap_or("".to_string())
+    );
     let id = format!("{}-{}", session_prefix, since_the_epoch.as_secs());
     let server_file = format!("/tmp/vim-server-{}", id);
     let session_name = format!("{}{}", id, session_suffix);
@@ -383,11 +414,17 @@ fn start_session(
             server_file,
         ]
     };
-    env_vars
-        .get("VMUX_ADDITIONAL_ARGUMENTS")
-        .map(|args| command.push(args.to_string()));
+    env_vars.get("VMUX_ADDITIONAL_ARGUMENTS").map(|args| {
+        args.split(" ")
+            .for_each(|arg| command.push(arg.to_string()))
+    });
     diss::run(&session_name, &command, env_vars, escape_key.clone())?;
-    selector(session_name, escape_key, configuration_directory_path)
+    selector(
+        session_name,
+        escape_key,
+        configuration_directory_path,
+        session_group,
+    )
 }
 
 async fn send(command: &str) -> Result<(), Box<dyn Error>> {
@@ -432,7 +469,7 @@ async fn edit(edited_file_path: &str) -> Result<(), Box<dyn Error>> {
 }
 
 fn run_or_selector(
-    f: impl Fn(String, Option<String>, Option<String>) -> Result<(), Box<dyn Error>>,
+    f: impl Fn(String, Option<String>, Option<String>, Option<String>) -> Result<(), Box<dyn Error>>,
     args: Args,
 ) -> Result<(), Box<dyn Error>> {
     match args.command.get(1) {
@@ -440,11 +477,13 @@ fn run_or_selector(
             session_prefix.to_string(),
             args.escape_key,
             args.configuration_directory_path,
+            args.session_group,
         ),
         None => selector(
             "".to_string(),
             args.escape_key,
             args.configuration_directory_path,
+            args.session_group,
         ),
     }
 }
@@ -459,6 +498,10 @@ struct Args {
     // configuration directory path
     #[clap(short, long, value_parser)]
     configuration_directory_path: Option<String>,
+
+    // name of the group of session
+    #[clap(short, long, value_parser)]
+    session_group: Option<String>,
 
     // command
     command: Vec<String>,
@@ -477,7 +520,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
             } else if action == "new" {
                 run_or_selector(start_session, args)?;
             } else if action == "list" {
-                show_session_list()?;
+                show_session_list(args.session_group)?;
             } else if action == "send" {
                 let command = &args.command[1..].join(" ");
                 send(command).await?;
