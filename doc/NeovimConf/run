@@ -1,0 +1,2 @@
+#!/bin/env sh
+vmux -c $(dirname $0)/conf new

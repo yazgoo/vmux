@@ -132,10 +132,13 @@ fn save_with_baus(val: String) -> Result<Vec<String>, Box<dyn Error>> {
 fn config_dir_path(configuration_directory_path: Option<String>) -> Result<String, Box<dyn Error>> {
     match configuration_directory_path {
         Some(dir) => Ok(dir),
-        None => Ok(dirs::config_dir()
-            .ok_or_else(|| Box::new(ConfigDirNotFound))?
-            .to_string_lossy()
-            .to_string()),
+        None => Ok(format!(
+            "{}/vmux/",
+            dirs::config_dir()
+                .ok_or_else(|| Box::new(ConfigDirNotFound))?
+                .to_string_lossy()
+                .to_string()
+        )),
     }
 }
 
@@ -143,7 +146,7 @@ fn vmux_wallpapers_path(
     configuration_directory_path: Option<String>,
 ) -> Result<String, Box<dyn Error>> {
     Ok(format!(
-        "{}/vmux/wallpapers/",
+        "{}/wallpapers/",
         config_dir_path(configuration_directory_path)?
     ))
 }
@@ -153,7 +156,7 @@ fn vmux_hook_path(
     configuration_directory_path: Option<String>,
 ) -> Result<String, Box<dyn Error>> {
     Ok(format!(
-        "{}/vmux/hooks/{}.sh",
+        "{}/hooks/{}.sh",
         config_dir_path(configuration_directory_path)?,
         hook_name
     ))
@@ -363,7 +366,7 @@ fn start_session(
     env_vars.insert("vmux_server_file".to_string(), server_file.clone());
 
     let vmux_editor = env::var("VMUX_EDITOR").unwrap_or("nvim".to_string());
-    let command = if vmux_editor.contains("nvim") {
+    let mut command = if vmux_editor.contains("nvim") {
         vec![
             vmux_editor,
             "--cmd".to_string(),
@@ -380,6 +383,9 @@ fn start_session(
             server_file,
         ]
     };
+    env_vars
+        .get("VMUX_ADDITIONAL_ARGUMENTS")
+        .map(|args| command.push(args.to_string()));
     diss::run(&session_name, &command, env_vars, escape_key.clone())?;
     selector(session_name, escape_key, configuration_directory_path)
 }

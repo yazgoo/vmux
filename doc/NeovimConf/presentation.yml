@@ -1,0 +1,34 @@
+---
+disclaimer: |
+  blah blalh blih
+The old times: |
+  (no term in vim)
+revolution step 1: |
+  terminal in neovim
+revolution step 2: |
+  terminal in vim8
+Main limitation: |
+  copy terminal buffer with line wrapping
+
+  https://github.com/ebuzzing/terraform-infrastructure/pull/14499
+  https://github.com/neovim/neovim/issues/2514
+  https://github.com/neovim/neovim/pull/11014
+I decide to use it: |
+  https://yazgoo.github.io/blag/neovim/terminal/multiplexer/tmux/2017/11/29/neovim-one-week-without-tmux.html
+basic functionalities: |
+  - exit terminal easily
+  - zoom
+  - copy pasting
+  - completion
+  - detach (abduco)
+  - control vim within terminal via server mode
+vim / neovim server mode: |
+  TODO
+2018 vmux release: |
+  https://linuxfr.org/users/yazgoo/journaux/vmux-un-plugin-pour-utiliser-neovim-en-tant-que-multiplexer-de-terminal
+2021 vmux release: |
+  https://www.reddit.com/r/neovim/comments/rs5ivq/vmux_a_plugin_to_use_neovim_as_a_terminal/
+2022 1: |
+  add support for multiple vim instances
+2022 2: |
+  rust rewrite
