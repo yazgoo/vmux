@@ -1,14 +1,15 @@
 #!/bin/env sh
-args=""
 presentation_root=$(dirname $(dirname $(dirname $0)))
+args="-u $presentation_root/../../docker/init.vim "
 get_page() {
-  yq -r <"$presentation_root"/presentation.yml ".[\"$(echo $1 | sed 's/^.*\. //')\"].$2" 
+  set -x
+  yq -r <"$presentation_root"/presentation.yml ".[\"$(echo $1 | sed 's/^[^ ]\+ //')\"].$2" 
 }
 
 split=$(get_page "$1" split)
 if [ "$split" != null ]
 then
-  args="-$split"
+  args="$args -$split"
 fi
 
 img=$(get_page "$1" img)
@@ -32,5 +33,6 @@ echo $1 | sed 's/./=/g'
 echo
 get_page "$1" text
 )> "$render_file"
+args=$(echo "$args" | sed 's/ \+/ /g')
 
 echo VMUX_ADDITIONAL_ARGUMENTS="$args$render_file"

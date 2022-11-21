@@ -11,6 +11,7 @@ nnoremap <space>h :winc h<cr>
 nnoremap <space>j :winc j<cr>
 nnoremap <space>k :winc k<cr>
 nnoremap <space>l :winc l<cr>
+nnoremap <space>q :qa!<cr>
 
 nnoremap <space>w :w<cr>
 nnoremap <space>t :tabnew<cr>
@@ -25,3 +26,11 @@ set statusline+=%=
 set statusline+=%{substitute(getcwd(),'^.*/','','')}
 
 set shell=/bin/bash
+set termguicolors
+hi! link StatusLine Normal
+hi! link StatusLineNC Normal
+set statusline=%{repeat(' ',winwidth('.'))}
+set fillchars+=eob: 
+set fillchars+=vert: 
+set laststatus=0
+

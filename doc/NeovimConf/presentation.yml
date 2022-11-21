@@ -1,24 +1,23 @@
 ---
 vmux:
-  split: o
-  img: forest.png
+  split: O
+  img: barcode.png
   text: |
-    a 5 year journey in using neovim as a terminal multiplexer
-    ==========================================================
-
-    Author: Olivier 'Yazgoo' Abdesselam
+    a 5 year journey using neovim 
+    =============================
+    as a terminal multiplexer
+    ==========================
 presentation:
   split: O
-  img: capy.png
+  term: blockishfire
   text: |
     Who am I: 
       Olivier 'Yazgoo' Abdesselam 
       Data engineer @teads.tv
 
-    Disclaimer:
-
-      - I am just a basic vim user
-      - I like to toy with terminal emulators 🖥 and rust 🦀  
+      - a basic vim user
+      - to toy with terminal emulators 🖥
+      - love rust 🦀  
 The old times:
   split: o
   img: tmux-logo-medium.png
@@ -26,45 +25,22 @@ The old times:
     - no terminal in (neo)vim
     - I used tmux 💕 + vim
     - tmux provides:
-      - splits
-      - tabs
-      - detach
-revolution step 1: 
+      - 'panes' (splits)
+      - 'windows' (tabs)
+      - 'sessions' (detach)
+revolution: 
   split: o
-  term: bash
+  term: presentation_root/clean_bash
   text: |
-    2015: https://github.com/neovim/neovim/pull/2076
+    nvim, 2015: https://github.com/neovim/neovim/pull/2076
     `:help terminal`
-
     ```
     Terminal emulator				*terminal* *terminal-emulator*
 
-    Nvim embeds a VT220/xterm terminal emulator based on libvterm. The terminal is
-    presented as a special 'buftype', asynchronously updated as data is received
-    from the connected program.
-
+    Nvim embeds a VT220/xterm terminal emulator based on libvterm.
     ```
-revolution step 2:
-  split: O
-  img: vimlog.png
-  text: |
-    2018: terminal in vim8
-    
-    `:help terminal`
 
-    ```
-    *terminal.txt*	For Vim version 9.0.  Last change: 2022 Oct 10
-
-
-          VIM REFERENCE MANUAL	  by Bram Moolenaar
-
-
-    Terminal window support				*terminal* *terminal-window*
-
-    The terminal feature is optional, use this to check if your Vim has it: >
-      echo has('terminal')
-    If the result is "1" you have it.
-    ```
+    also vim, 2018
 Main limitation:
   split: O
   term: presentation_root/long_lines_limit
@@ -90,64 +66,46 @@ neovim server mode:
   text: |
     - control vim within terminal via server mode:
         ```vim
+        " open named pipe and listen to RPC messages
         let g:server_addr = serverstart('/tmp/vim-server')
         ```
 
         define a CLI to send vim command `vmux-send`
         ```python
-        import neovim
-        import sys
         nvim = neovim.attach('socket', path='/tmp/vim-server')
         nvim.command(" ".join(sys.argv[1:]))
         ```
-
-        in `bashrc`:
-        ```bash
-        # define aliases
-        for cmd in split vsplit e tabnew
-        do
-          alias $cmd="vmux-send :$cmd"
-        done
-        # cd from within terminal changes vim directory !
-        function cd() {  
-          builtin cd "$@";
-          # if the parent process is nvim, do a vim cd 
-          (ps -o comm= $PPID | grep nvim > /dev/null) && vmux-send :cd "$@"
-        }
-        export cd
-        ```
-
-    `:help serverstart`
-    ```
-    serverstart([{address}])				*serverstart()*
-        Opens a socket or named pipe at {address} and listens for
-        |RPC| messages. Clients can send |API| commands to the
-        returned address to control Nvim.
-    ```
 alias:
+  split: O
+  img: vmux.png
   text: |
-      ```
-      #!/usr/bin/sh
-      alias vmux="(abduco -l|grep nvim-session) || rm -f /tmp/vim-server;\
-                  abduco -e '^g' -A nvim-session nvim --cmd \
-                  \"let g:server_addr = serverstart('/tmp/vim-server')\""
+      ```bash
+      # use abduco to emulate detach
+      alias vmux="(abduco -l|grep nvim-session) || \
+          rm -f /tmp/vim-server;\
+          abduco -e '^g' -A nvim-session nvim --cmd \
+          \"let g:server_addr = serverstart('/tmp/vim-server')\""
       ```
 
       And thus, vmux was born 🎉  
-2018 vmux release:
-  split: o
-  term: presentation_root/run_asciinema
-
+vmux basics demo:
+  split: O
+  term: bash
   text: |
-    https://linuxfr.org/users/yazgoo/journaux/vmux-un-plugin-pour-utiliser-neovim-en-tant-que-multiplexer-de-terminal
-2021 vmux release:
-  text: |
-    https://www.reddit.com/r/neovim/comments/rs5ivq/vmux_a_plugin_to_use_neovim_as_a_terminal/
-
-    https://www.youtube.com/watch?time_continue=80&v=CnLlT0Wd_wY&feature=emb_title
+    - vmux
+    - vmux new
+    - vsplit +terminal
+    - rsplit my_file
+    - cd
+    - tabnew +terminal
+    - crontab -e  | git rebase
+    - detach with ^G
+    - vmux list
+    - vmux attach
+    - stop session by quitting vim
 2022, why change ?:
   text: |
-    add support for multiple vim instances
+    before: I mostly used the same nvim instance
 
     I use more and more LSPs
     scala: https://scalameta.org/metals/
@@ -155,69 +113,50 @@ alias:
 
     multiple LSP in one vim instance was not a good experience.
 
-    allow to switch easily between instances with fzf
-
-    FZF + baus + abduco + blockish
-FZF:
-  split: o
-  term: presentation_root/fzf_demo
+    after: facilitate using multiple instances and switching 
+2022 2:
   text: |
-    FZF is a fuzzy finder written in go
-    https://github.com/junegunn/fzf
+    🦀 rust rewrite
 
-    ```bash
-    while true
-    do
-      result=$(echo "dog
-      hamster
-      capybara
-      cat" | fzf --header="what's your favorite" | sed 's/.* //' | name_to_emoji)
-      rain_emoji $result
-      echo thanks
-      read
-    done
-    ```
-customization:
+    before: multiple binaries required
+    after: one self-contained binary:
+
+    relies on:
+      - wallpapers are displayed via [blockish](https://github.com/yazgoo/blockish/)
+      - fuzzy prompting done via [skim](https://github.com/lotabout/skim/)
+      - BAcked Up Sorter : [baus](https://github.com/yazgoo/baus)
+      - abduco replaced with: [diss](https://github.com/yazgoo/diss)
+about diss:
+  split: O
+  term: presentation_root/diss
   text: |
-    For an optimal experience, you should at least add 
-    `list_sessions_names.sh` and `session_name.sh` hook scripts described below.
+    Diss:
 
-    ## session setup
-
-    You can define a custom way to setup a new session via `~/.config/vmux/hooks/session_name.sh`,
-    which takes the session name as argument.
-    The script just needs to print environment variables of the form `key=value` (`env` command will do that).
-
-    For example, [this script](docker/session_name.sh) will print the content of `.envrc`
-    and set working directory to `~/dev/$1` (via `PWD` line).
+    - dissociates a program from current terminal
+    - is like :
+        - [dtach](https://github.com/crigler/dtach)
+        - [abduco](https://github.com/martanne/abduco)
+    - is also a rust crate you can easily integrate !
+vmux customization:
+  text: |
 
     ## list sessions names
 
     You can define a list of new session names via `~/.config/vmux/hooks/list_sessions_names.sh`
-    The script just needs to output session names one by line, see [docker](docker/list_sessions_names.sh) for an example.
+    ```bash
+    find -L ~/dev -maxdepth 1 -mindepth 1 -type d | while read d; do basename $d; done
+    ```
+
+    ## session setup
+
+    setup a new session via `~/.config/vmux/hooks/session_name.sh`,
+
+    ```bash
+    mypwd=$HOME/dev/"$1"
+    [ -e "$mypwd" ] && echo PWD="$mypwd"
+    ```
 
     ## wallpaper
 
     You can put images which will be used as wallpapers inside `~/.config/vmux/wallpapers/`.
 
-
-diss:
-  text: |
-    Diss:
-
-    - dissociates a program from current terminal
-    - is like [dtach](https://github.com/crigler/dtach), [abduco](https://github.com/martanne/abduco) (think [GNU screen](https://www.gnu.org/software/screen/) or [tmux](https://github.com/tmux/tmux) without multiplexing)
-    - is also a rust crate you can easily integrate
-2022 2:
-  text: |
-    rust rewrite
-
-    before: multiple binaries (fzf + baus + abduco + blockish)
-    after: one self-contained binary:
-
-    This project relies on the following fundamentals crates:
-
-    - wallpapers are displayed via [blockish](https://github.com/yazgoo/blockish/)
-    - fuzzy prompting is done via [skim](https://github.com/lotabout/skim/)
-    - terminal session management: [diss](https://github.com/yazgoo/diss)
-    - historized ordering of selections (BAcked Up Sorter) : [baus](https://github.com/yazgoo/baus)

@@ -1,2 +1,2 @@
 #!/bin/env sh
-vmux -c $(dirname $0)/conf -s NeovimConf new
+LANG=C vmux -c $(dirname $0)/conf -s NeovimConf new
