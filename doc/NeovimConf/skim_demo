@@ -43,7 +43,7 @@ do
   result=$(echo "dog
   hamster
   capybara
-  cat" | fzf --header="what's your favorite" | sed 's/.* //' | name_to_emoji)
+  cat" | sk --header="what's your favorite" | sed 's/.* //' | name_to_emoji)
   rain_emoji $result
   echo thanks
   read

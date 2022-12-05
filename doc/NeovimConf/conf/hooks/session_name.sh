@@ -1,6 +1,7 @@
 #!/bin/env sh
 presentation_root=$(dirname $(dirname $(dirname $0)))
-args="-u $presentation_root/../../docker/init.vim "
+tmp_init_vim="/tmp/tmp.neovimconf.init.vim"
+args="-u $tmp_init_vim "
 get_page() {
   set -x
   yq -r <"$presentation_root"/presentation.yml ".[\"$(echo $1 | sed 's/^[^ ]\+ //')\"].$2" 

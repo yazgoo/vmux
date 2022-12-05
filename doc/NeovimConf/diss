@@ -1,0 +1,77 @@
+#!/bin/env ruby
+graph="    (                             )
+    ( (                 ) diss    )
+    ( (  pseudo term    ) server  )
+    ( ( (   nvim   )    )         )
+    ( (  D       C      )         )
+    (    D       C                )
+    ( (program) (in    ) (in    ) )
+    ( (event  ) (thread) (thread) )
+    ( (thread ) (# 1   ) (#2    ) )
+    (       D     B               )
+            D     B
+   ( unix   D     B                 )
+   ( domain (stream #1) (stream #2) )
+   ( socketsD B                     )
+            D B
+( term emulator   ) ( term emulator   )
+( (diss client 1) ) ( (diss client 2) )
+( AAAAAAAAAAAA    ) (                 )
+"
+
+def open(color)
+  "\u001b[#{color}m\u001b[30m"
+end
+
+def close(color)
+  "\u001b[#{color}m"
+end
+
+def rgb(r, g, b)
+  "48;2;#{r};#{g};#{b}"
+end
+
+def colorize_line(line)
+  colors = [rgb(16, 161, 157),rgb(84, 3, 117),rgb(255, 112, 0),rgb(255, 112, 0)]
+  i = 0
+  (line.each_char.to_a.map do |c|
+    if c == '('
+      s = open(colors[i])
+      i += 1
+      " " + s
+    elsif c == ')'
+      i -= 1
+      close(0)  + (i > 0 ? open(colors[i - 1]): "") + " "
+    else
+      c.to_s
+    end
+  end).join + close(0)
+end
+
+def colorize(g)
+
+  color_template = []
+  g.split("\n").each.collect do |line|
+    colorize_line(line)
+  end.join("\n")
+end
+
+loop do
+  syms = ["A", "B", "C", "D"]
+  syms.each do |to_replace|
+    puts `clear`
+    puts "\u001b[?25l"
+    res = syms.reduce(colorize(graph)) do |g, x|
+      line = x == to_replace ? "┼ ": "  "
+      space = x == to_replace ? "│" : " "
+      res = g.gsub(x + "+", line)
+      if x == to_replace and x == "A"
+        res.gsub(/A+/, "input event ")
+      else
+        res.gsub(x, space)
+      end
+    end
+    puts res
+    gets
+  end
+end

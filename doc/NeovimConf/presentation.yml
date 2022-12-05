@@ -7,27 +7,30 @@ vmux:
     =============================
     as a terminal multiplexer
     ==========================
-presentation:
-  split: O
-  term: blockishfire
-  text: |
-    Who am I: 
+
+    https://github.com/yazgoo/vmux
+
+    # Who am I ?
+
       Olivier 'Yazgoo' Abdesselam 
       Data engineer @teads.tv
 
       - a basic vim user
       - to toy with terminal emulators 🖥
       - love rust 🦀  
-The old times:
+The old times (before 2015):
   split: o
   img: tmux-logo-medium.png
   text: |
-    - no terminal in (neo)vim
-    - I used tmux 💕 + vim
-    - tmux provides:
-      - 'panes' (splits)
-      - 'windows' (tabs)
-      - 'sessions' (detach)
+    no terminal in (neo)vim, I used tmux 💕 + vim
+       ╭─────────────────────────┬──────────────╮
+       │ tmux provides           │ vim provides │
+       ├─────────────────────────┼──────────────┤ 
+       │ 'terminal'              │   ?          │
+       │ 'panes'                 │   'windows'  │
+       │ 'windows'               │   'tabs'     │
+       │ 'sessions' (detach)     │   ?          │
+       ╰─────────────────────────┴──────────────╯
 revolution: 
   split: o
   term: presentation_root/clean_bash
@@ -45,10 +48,15 @@ Main limitation:
   split: O
   term: presentation_root/long_lines_limit
   text: |
-    copy terminal buffer with line wrapping
+    copy terminal buffer with line wrapping:
 
-    - https://github.com/neovim/neovim/issues/2514
-    - https://github.com/neovim/neovim/pull/11014
+      - https://github.com/neovim/neovim/issues/2514
+      - https://github.com/neovim/neovim/pull/11014
+
+    bypass:
+
+      - resize window
+      - pipe command output to clipboard or file
 I decide to use it:
   split: o
   term: presentation_root/terminal_text_to_copy
@@ -66,10 +74,8 @@ neovim server mode:
   text: |
     - control vim within terminal via server mode:
         ```vim
-        " open named pipe and listen to RPC messages
         let g:server_addr = serverstart('/tmp/vim-server')
         ```
-
         define a CLI to send vim command `vmux-send`
         ```python
         nvim = neovim.attach('socket', path='/tmp/vim-server')
@@ -90,31 +96,37 @@ alias:
       And thus, vmux was born 🎉  
 vmux basics demo:
   split: O
-  term: bash
+  term: presentation_root/clean_bash
   text: |
-    - vmux
-    - vmux new
-    - vsplit +terminal
-    - rsplit my_file
-    - cd
-    - tabnew +terminal
-    - crontab -e  | git rebase
-    - detach with ^G
-    - vmux list
-    - vmux attach
-    - stop session by quitting vim
+    - vmux command:
+      - vmux
+      - vmux new
+      - vmux list
+      - vmux attach
+    - in terminal:
+      - tabnew +terminal
+      - vsplit +terminal
+      - rsplit `my_file`
+      - cd
+      - git commit
+    - quit session
+      - detach with ^G
+      - stop session by quitting vim
 2022, why change ?:
   text: |
     before: I mostly used the same nvim instance
 
     I use more and more LSPs
-    scala: https://scalameta.org/metals/
-    rust: https://github.com/rust-analyzer/lsp-server
+
+      - scala: https://scalameta.org/metals/
+      - rust: https://github.com/rust-analyzer/lsp-server
 
     multiple LSP in one vim instance was not a good experience.
 
     after: facilitate using multiple instances and switching 
-2022 2:
+2022 rewrite:
+  split: O
+  term: presentation_root/skim_demo
   text: |
     🦀 rust rewrite
 
@@ -122,10 +134,10 @@ vmux basics demo:
     after: one self-contained binary:
 
     relies on:
-      - wallpapers are displayed via [blockish](https://github.com/yazgoo/blockish/)
-      - fuzzy prompting done via [skim](https://github.com/lotabout/skim/)
-      - BAcked Up Sorter : [baus](https://github.com/yazgoo/baus)
-      - abduco replaced with: [diss](https://github.com/yazgoo/diss)
+      - wallpapers [blockish](https://github.com/yazgoo/blockish/)
+      - fuzzy [skim](https://github.com/lotabout/skim/)
+      - BAcked Up Sorter [baus](https://github.com/yazgoo/baus)
+      - abduco replaced with [diss](https://github.com/yazgoo/diss)
 about diss:
   split: O
   term: presentation_root/diss
@@ -159,4 +171,12 @@ vmux customization:
     ## wallpaper
 
     You can put images which will be used as wallpapers inside `~/.config/vmux/wallpapers/`.
+Thanks :
+  split: O
+  term: blockishfire
+  text: |
+    # project
+    
+    https://github.com/yazgoo/vmux
 
+    # Questions

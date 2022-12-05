@@ -1,5 +1,7 @@
 call plug#begin()
 Plug 'yazgoo/vmux', {'do': 'cargo install vmux' }
+Plug  'preservim/vim-markdown' 
+Plug 'dhruvasagar/vim-zoom'
 call plug#end()
 
 
@@ -26,11 +28,3 @@ set statusline+=%=
 set statusline+=%{substitute(getcwd(),'^.*/','','')}
 
 set shell=/bin/bash
-set termguicolors
-hi! link StatusLine Normal
-hi! link StatusLineNC Normal
-set statusline=%{repeat(' ',winwidth('.'))}
-set fillchars+=eob: 
-set fillchars+=vert: 
-set laststatus=0
-
