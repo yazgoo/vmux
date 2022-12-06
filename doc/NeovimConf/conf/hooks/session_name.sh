@@ -1,4 +1,5 @@
 #!/bin/env sh
+set -x
 presentation_root=$(dirname $(dirname $(dirname $0)))
 tmp_init_vim="/tmp/tmp.neovimconf.init.vim"
 args="-u $tmp_init_vim "
@@ -27,7 +28,8 @@ then
 fi
 
 
-render_file=/tmp/$(date +%s).md
+filename=$(echo "$1" | md5sum | cut -d\  -f1)
+render_file="/tmp/tmp.neovimconf.$filename.md"
 (
 echo $1
 echo $1 | sed 's/./=/g'

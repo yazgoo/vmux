@@ -3,7 +3,7 @@ echo "downloading images..."
 [ -e $(dirname $0)/img/tmux-logo-medium.png ] || (cd $(dirname $0)/img/; wget https://github.com/tmux/tmux/raw/master/logo/tmux-logo-medium.png)
 [ -e $(dirname $0)/img/barcode.png ] || (cd $(dirname $0)/img/; qrencode --foreground=000000 --background=ffffff -o barcode.png https://github.com/yazgoo/vmux)
 echo "generating conf..."
-original_init_vim="$presentation_root/../../docker/init.vim"
+original_init_vim="$(dirname $0)/../../docker/init.vim"
 tmp_init_vim="/tmp/tmp.neovimconf.init.vim"
 (cat "$original_init_vim"
 echo "
