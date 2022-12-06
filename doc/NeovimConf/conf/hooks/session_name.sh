@@ -1,41 +1,5 @@
 #!/bin/env sh
-set -x
-presentation_root=$(dirname $(dirname $(dirname $0)))
-tmp_init_vim="/tmp/tmp.neovimconf.init.vim"
-args="-u $tmp_init_vim "
-get_page() {
-  set -x
-  yq -r <"$presentation_root"/presentation.yml ".[\"$(echo $1 | sed 's/^[^ ]\+ //')\"].$2" 
-}
-
-split=$(get_page "$1" split)
-if [ "$split" != null ]
-then
-  args="$args -$split"
-fi
-
-img=$(get_page "$1" img)
-if [ "$img" != null ]
-then
-  echo IMG_PATH="$presentation_root/img/$img"
-  args="$args term://$presentation_root/render_img "
-fi
-
-term=$(get_page "$1" term | sed 's;presentation_root;'$presentation_root';')
-if [ "$term" != null ]
-then
-  args="$args term://$term "
-fi
-
-
-filename=$(echo "$1" | md5sum | cut -d\  -f1)
-render_file="/tmp/tmp.neovimconf.$filename.md"
-(
-echo $1
-echo $1 | sed 's/./=/g'
-echo
-get_page "$1" text
-)> "$render_file"
-args=$(echo "$args" | sed 's/ \+/ /g')
-
-echo VMUX_ADDITIONAL_ARGUMENTS="$args$render_file"
+export _hash=$(echo "$1" | md5sum | cut -d\  -f1)
+export args_file="/tmp/tmp.neovimconf.$_hash.args"
+echo "$args_file" > /tmp/lol
+cat $args_file

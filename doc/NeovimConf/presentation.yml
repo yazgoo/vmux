@@ -18,19 +18,20 @@ vmux:
       - a basic vim user
       - to toy with terminal emulators 🖥
       - love rust 🦀  
+
 The old times (before 2015):
   split: o
   img: tmux-logo-medium.png
   text: |
     no terminal in (neo)vim, I used tmux 💕 + vim
-       ╭─────────────────────────┬──────────────╮
-       │ tmux provides           │ vim provides │
-       ├─────────────────────────┼──────────────┤ 
-       │ 'terminal'              │   ?          │
-       │ 'panes'                 │   'windows'  │
-       │ 'windows'               │   'tabs'     │
-       │ 'sessions' (detach)     │   ?          │
-       ╰─────────────────────────┴──────────────╯
+        ╭─────────────────────────┬──────────────╮
+        │ tmux provides           │ vim provides │
+        ├─────────────────────────┼──────────────┤ 
+        │ 'terminal'              │   ?          │
+        │ 'panes'                 │   'windows'  │
+        │ 'windows'               │   'tabs'     │
+        │ 'sessions' (detach)     │   ?          │
+        ╰─────────────────────────┴──────────────╯
 revolution: 
   split: o
   term: presentation_root/clean_bash
@@ -93,7 +94,8 @@ alias:
           \"let g:server_addr = serverstart('/tmp/vim-server')\""
       ```
 
-      And thus, vmux was born 🎉  
+      And thus, vmux was born 🎉 !  
+
 vmux basics demo:
   split: O
   term: presentation_root/clean_bash
@@ -113,6 +115,8 @@ vmux basics demo:
       - detach with ^G
       - stop session by quitting vim
 2022, why change ?:
+  split: O
+  img: scalameta-logo.png
   text: |
     before: I mostly used the same nvim instance
 
