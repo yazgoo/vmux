@@ -1,0 +1,26 @@
+#!/bin/env sh
+get_page() {
+  yq -r <$(dirname $0)/presentation.yml ".[\"$(echo $1 | sed 's/^.*\. //')\"].$2" 
+}
+
+markdown() {
+  echo "---
+  theme: gaia
+  _class: lead
+  paginate: true
+  backgroundColor: #fff
+  backgroundImage: url('https://marp.app/assets/hero-background.svg')"
+
+  yq -r <$(dirname $0)/presentation.yml 'keys_unsorted[]' | nl -w2 -s'. ' | while read section
+do
+  echo "---"
+  echo
+  echo "# $section"
+  echo
+  get_page "$section" text
+  echo
+done
+}
+
+markdown
+

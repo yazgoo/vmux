@@ -1,5 +1,7 @@
 call plug#begin()
 Plug 'yazgoo/vmux', {'do': 'cargo install vmux' }
+Plug  'preservim/vim-markdown' 
+Plug 'dhruvasagar/vim-zoom'
 call plug#end()
 
 
@@ -11,6 +13,7 @@ nnoremap <space>h :winc h<cr>
 nnoremap <space>j :winc j<cr>
 nnoremap <space>k :winc k<cr>
 nnoremap <space>l :winc l<cr>
+nnoremap <space>q :qa!<cr>
 
 nnoremap <space>w :w<cr>
 nnoremap <space>t :tabnew<cr>

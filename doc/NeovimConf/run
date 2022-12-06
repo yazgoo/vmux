@@ -1,0 +1,84 @@
+#!/bin/env bash
+generate_md_and_args() {
+  presentation_root=$(dirname $0)
+  presentation_yml="$presentation_root"/presentation.yml
+  if [ -e "$args_file" ]
+  then
+    if [ $(date +%s -r "$args_file") -gt $(date +%s -r "$presentation_yml") ]
+    then
+      return
+    fi
+  fi
+  tmp_init_vim="/tmp/tmp.neovimconf.init.vim"
+  args="-u $tmp_init_vim "
+  get_page() {
+    yq -r <"$presentation_yml" ".[\"$(echo $1 | sed 's/^[^ ]\+ //')\"].$2" 
+  }
+  rm -f "$args_file"
+  split=$(get_page "$1" split)
+  if [ "$split" != null ]
+  then
+    args="$args -$split"
+  fi
+
+  img=$(get_page "$1" img)
+  if [ "$img" != null ]
+  then
+    echo IMG_PATH="$presentation_root/img/$img" >> "$args_file"
+    args="$args term://$presentation_root/render_img "
+  fi
+
+  term=$(get_page "$1" term | sed 's;presentation_root;'$presentation_root';')
+  if [ "$term" != null ]
+  then
+    args="$args term://$term "
+  fi
+
+
+  render_file="/tmp/tmp.neovimconf.$_hash.md"
+  (
+  echo $1
+  echo $1 | sed 's/./=/g'
+  echo
+  get_page "$1" text
+  )> "$render_file"
+  args=$(echo "$args" | sed 's/ \+/ /g')
+  echo VMUX_ADDITIONAL_ARGUMENTS="$args$render_file" >> "$args_file"
+}
+
+echo "downloading images..."
+[ -e $(dirname $0)/img/scalameta-logo.png ] || (cd $(dirname $0)/img/; wget https://scalameta.org/metals/img/scalameta-logo.png)
+[ -e $(dirname $0)/img/tmux-logo-medium.png ] || (cd $(dirname $0)/img/; wget https://github.com/tmux/tmux/raw/master/logo/tmux-logo-medium.png)
+[ -e $(dirname $0)/img/barcode.png ] || (cd $(dirname $0)/img/; qrencode --foreground=000000 --background=ffffff -o barcode.png https://github.com/yazgoo/vmux)
+echo "generating conf..."
+original_init_vim="$(dirname $0)/../../docker/init.vim"
+tmp_init_vim="/tmp/tmp.neovimconf.init.vim"
+(cat "$original_init_vim"
+echo "
+set termguicolors
+hi! link StatusLine Normal
+hi! link StatusLineNC Normal
+set statusline=%{repeat(' ',winwidth('.'))}
+set fillchars+=eob: 
+set fillchars+=vert: 
+set laststatus=0
+set nofoldenable
+"
+) > "$tmp_init_vim"
+echo "generating args and markdown"
+mapfile -t < <($(dirname $0)/conf/hooks/list_sessions_names.sh)
+for session in "${MAPFILE[@]}" 
+do
+  export _hash=$(echo "$session" | md5sum | cut -d\  -f1)
+  export args_file="/tmp/tmp.neovimconf.$_hash.args"
+  generate_md_and_args "$session"
+done
+echo "adjust terminal size:"
+while true
+do
+  l=$(tput lines)
+  echo $l == 25
+  [ $l -eq 25 ] && break
+  read
+done
+LANG=C vmux -c $(dirname $0)/conf -s NeovimConf new
