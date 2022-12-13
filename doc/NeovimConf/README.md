@@ -9,6 +9,10 @@ If you want to run it, run `bash`, and then run.
 
 `source doc/NeovimConf/run`
 
+then run:
+
+`vmux new`
+
 ## generating the presentation as pdf
 
 install [marp](https://github.com/marp-team/marp)
