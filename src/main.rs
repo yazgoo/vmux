@@ -220,6 +220,11 @@ fn list(
     Ok(res)
 }
 
+fn enable_mouse() {
+    // https://stackoverflow.com/questions/5966903/how-to-get-mousemove-and-mouseclick-in-bash
+    print!("\x1b[?1000h");
+}
+
 fn attach(
     session: String,
     escape_key: Option<String>,
@@ -228,6 +233,7 @@ fn attach(
 ) -> Result<(), Box<dyn Error>> {
     let empty = Vec::new();
     let empty2 = HashMap::new();
+    enable_mouse();
     diss::run(&session, &empty, empty2, escape_key.clone())?;
     selector(
         session,
@@ -418,6 +424,7 @@ fn start_session(
         args.split(" ")
             .for_each(|arg| command.push(arg.to_string()))
     });
+    enable_mouse();
     diss::run(&session_name, &command, env_vars, escape_key.clone())?;
     selector(
         session_name,
