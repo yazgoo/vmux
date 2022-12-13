@@ -103,21 +103,6 @@ The script just needs to output session names one by line, see [docker](docker/l
 
 You can put images which will be used as wallpapers inside `~/.config/vmux/wallpapers/`.
 
-## extra: tabbar
-
-A nice tabbar (based on [Caagr98/c98tabbar.vim](https://github.com/Caagr98/c98tabbar.vim)):
-
-```vimscript
-Plug 'git@github.com:yazgoo/c98tabbar.vim'
-Plug 'yazgoo/vmux-c98tabbar'
-```
-
-Leave terminal insert mode by typing escap twice: 
-```vimscript
-tnoremap <Esc><Esc> <C-\><C-n>
-```
-# architecture
-
 ## crates it relies on
 
 This project relies on the following fundamentals crates:

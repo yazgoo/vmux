@@ -61,6 +61,18 @@ generate_md_and_args() {
   echo VMUX_ADDITIONAL_ARGUMENTS="$args $render_file$postargs" | sed 's/  / /g' | sed 's/ $//' >> "$args_file"
 }
 
+die() {
+  echo "$@"
+  return
+}
+
+check_bin_exists() {
+  which $1 &>/dev/null || die "please install $1 (cargo install $1)"
+}
+
+check_bin_exists blockish
+check_bin_exists blockishfire
+
 echo "downloading images..."
 [ -e $script_dir/img/scalameta-logo.png ] || (cd $(dirname $0)/img/; wget https://scalameta.org/metals/img/scalameta-logo.png)
 [ -e $script_dir/img/tmux-logo-medium.png ] || (cd $(dirname $0)/img/; wget https://github.com/tmux/tmux/raw/master/logo/tmux-logo-medium.png)
@@ -83,21 +95,31 @@ set cmdheight=0
 ) > "$tmp_init_vim"
 echo "generating args and markdown..."
 mapfile -t < <($script_dir/conf/hooks/list_sessions_names.sh)
+pids=""
 for session in "${MAPFILE[@]}" 
 do
   export _hash=$(echo "$session" | md5sum | cut -d\  -f1)
   export args_file="/tmp/tmp.neovimconf.$_hash.args"
-  generate_md_and_args "$session"
+  generate_md_and_args "$session" &
+  pids="$pids $!"
 done
-echo "adjust terminal size:"
+for pid in $pids
+do
+  wait $pid 2>/dev/null
+done
 while true
 do
+  echo "please adjust terminal size"
   l=$(tput lines)
-  echo $l == 26
-  [ $l -eq 26 ] && break
+  if [ $l -eq 26 ]
+  then
+    echo "terminal size ok"
+    break
+  fi
+  echo got $l lines, expected 26, press enter to continue
   read
 done
 
 export LANG=C
 alias vmux="vmux -c $script_dir/conf -s NeovimConf"
-echo run vmux
+echo "run 'vmux new'"
