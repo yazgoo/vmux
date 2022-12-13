@@ -86,21 +86,23 @@ you can also manage sessions from the CLI:
 # customizing
 
 For an optimal experience, you should at least add 
-`list_sessions_names.sh` and `session_name.sh` hook scripts described below.
+`list_sessions_names` and `session_name` hook files described below.
+
+Both files must be executable (if they are a script, they should have a [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix))).
 
 ## session setup
 
-You can define a custom way to setup a new session via `~/.config/vmux/hooks/session_name.sh`,
+You can define a custom way to setup a new session via `~/.config/vmux/hooks/session_name`,
 which takes the session name as argument.
 The script just needs to print environment variables of the form `key=value` (`env` command will do that).
 
-For example, [this script](docker/session_name.sh) will print the content of `.envrc`
+For example, [this script](docker/session_name) will print the content of `.envrc`
 and set working directory to `~/dev/$1` (via `PWD` line).
 
 ## list sessions names
 
-You can define a list of new session names via `~/.config/vmux/hooks/list_sessions_names.sh`
-The script just needs to output session names one by line, see [docker](docker/list_sessions_names.sh) for an example.
+You can define a list of new session names via `~/.config/vmux/hooks/list_sessions_names`
+The script just needs to output session names one by line, see [docker](docker/list_sessions_names) for an example.
 
 ## wallpaper
 
