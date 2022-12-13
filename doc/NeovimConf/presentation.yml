@@ -6,7 +6,7 @@ vmux:
     a 5 year journey using neovim 
     =============================
     as a terminal multiplexer
-    ==========================
+    =========================
 
     https://github.com/yazgoo/vmux
 
@@ -16,22 +16,26 @@ vmux:
       Data engineer @teads.tv
 
       - a basic vim user
-      - to toy with terminal emulators 🖥
-      - love rust 🦀  
+      - 💙 to toy with terminal emulators 🖥
+      - 💜 rust 🦀  
+
 
 The old times (before 2015):
   split: o
   img: tmux-logo-medium.png
+  command: resize9
   text: |
-    no terminal in (neo)vim, I used tmux 💕 + vim
+    I used tmux 💕 + vim
+    ```
         ╭─────────────────────────┬──────────────╮
-        │ tmux provides           │ vim provides │
+        │ tmux provides           │ vim provided │
         ├─────────────────────────┼──────────────┤ 
-        │ 'terminal'              │   ?          │
         │ 'panes'                 │   'windows'  │
         │ 'windows'               │   'tabs'     │
+        │ 'terminal'              │   ?          │
         │ 'sessions' (detach)     │   ?          │
         ╰─────────────────────────┴──────────────╯
+    ```
 revolution: 
   split: o
   term: presentation_root/clean_bash
@@ -96,6 +100,7 @@ alias:
 
       And thus, vmux was born 🎉 !  
 
+      => let's put it in a plugin
 vmux basics demo:
   split: O
   term: presentation_root/clean_bash
@@ -106,42 +111,51 @@ vmux basics demo:
       - vmux list
       - vmux attach
     - in terminal:
-      - tabnew +terminal
-      - vsplit +terminal
-      - rsplit `my_file`
+      - lsplit / rsplit `my_file`
       - cd
-      - git commit
+      - $EDITOR integration
     - quit session
       - detach with ^G
       - stop session by quitting vim
 2022, why change ?:
-  split: O
-  img: scalameta-logo.png
   text: |
-    before: I mostly used the same nvim instance
 
-    I use more and more LSPs
+    ```
+    before LSPs on multiple projects          after LSPs on multiple projects
+    ────────────────────────────────          ───────────────────────────────
 
-      - scala: https://scalameta.org/metals/
-      - rust: https://github.com/rust-analyzer/lsp-server
+      vmux client                              vmux client
+       │                                        │
+       ╰── abduco / nvim                        ├── abduco / nvim
+                │                               │        │
+                ├─── rust project ⏳            │        ╰─── rust project
+                │                               │
+                ╰─── scala project ⏳           ╰── abduco / nvim
+                                                         │
+                                                         ╰─── scala project
+    ```
 
-    multiple LSP in one vim instance was not a good experience.
+    => ease session switch 
 
-    after: facilitate using multiple instances and switching 
 2022 rewrite:
-  split: O
-  term: presentation_root/skim_demo
   text: |
     🦀 rust rewrite
 
     before: multiple binaries required
-    after: one self-contained binary:
+    after: one self-contained binary
 
-    relies on:
-      - wallpapers [blockish](https://github.com/yazgoo/blockish/)
-      - fuzzy [skim](https://github.com/lotabout/skim/)
-      - BAcked Up Sorter [baus](https://github.com/yazgoo/baus)
-      - abduco replaced with [diss](https://github.com/yazgoo/diss)
+    relies on (crates 📦): (+demo)
+
+      - [skim](https://github.com/lotabout/skim)
+      - [BauS](https://github.com/yazgoo/baus)
+      - [blockish](https://github.com/yazgoo/blockish)
+      - [diss](https://github.com/yazgoo/diss)
+
+    Customizable (like this presentation 🥳)  :
+      - new session name suggestion
+      - new session pre-hook
+      - wallpapers
+
 about diss:
   split: O
   term: presentation_root/diss
@@ -152,35 +166,13 @@ about diss:
     - is like :
         - [dtach](https://github.com/crigler/dtach)
         - [abduco](https://github.com/martanne/abduco)
-    - is also a rust crate you can easily integrate !
-vmux customization:
-  text: |
+    - is a standalone binary
+    - also a rust crate you can easily integrate !
 
-    ## list sessions names
-
-    You can define a list of new session names via `~/.config/vmux/hooks/list_sessions_names.sh`
-    ```bash
-    find -L ~/dev -maxdepth 1 -mindepth 1 -type d | while read d; do basename $d; done
-    ```
-
-    ## session setup
-
-    setup a new session via `~/.config/vmux/hooks/session_name.sh`,
-
-    ```bash
-    mypwd=$HOME/dev/"$1"
-    [ -e "$mypwd" ] && echo PWD="$mypwd"
-    ```
-
-    ## wallpaper
-
-    You can put images which will be used as wallpapers inside `~/.config/vmux/wallpapers/`.
 Thanks :
-  split: O
-  term: blockishfire
+  split: o
+  bterm: blockishfire
+  command: resize5
   text: |
-    # project
-    
-    https://github.com/yazgoo/vmux
-
+    # https://github.com/yazgoo/vmux 
     # Questions

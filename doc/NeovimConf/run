@@ -1,6 +1,7 @@
 #!/bin/env bash
+script_dir=$(dirname  "${BASH_SOURCE[0]}")
 generate_md_and_args() {
-  presentation_root=$(dirname $0)
+  presentation_root=$script_dir
   presentation_yml="$presentation_root"/presentation.yml
   if [ -e "$args_file" ]
   then
@@ -43,15 +44,29 @@ generate_md_and_args() {
   get_page "$1" text
   )> "$render_file"
   args=$(echo "$args" | sed 's/ \+/ /g')
-  echo VMUX_ADDITIONAL_ARGUMENTS="$args$render_file" >> "$args_file"
+
+  postargs=""
+  bterm=$(get_page "$1" bterm | sed 's;presentation_root;'$presentation_root';')
+  if [ "$bterm" != null ]
+  then
+    postargs=" term://$bterm "
+  fi
+
+  _command=$(get_page "$1" command)
+  if [ "$bterm" != null ]
+  then
+    postargs="$postargs -c $_command "
+  fi
+
+  echo VMUX_ADDITIONAL_ARGUMENTS="$args $render_file$postargs" | sed 's/  / /g' | sed 's/ $//' >> "$args_file"
 }
 
 echo "downloading images..."
-[ -e $(dirname $0)/img/scalameta-logo.png ] || (cd $(dirname $0)/img/; wget https://scalameta.org/metals/img/scalameta-logo.png)
-[ -e $(dirname $0)/img/tmux-logo-medium.png ] || (cd $(dirname $0)/img/; wget https://github.com/tmux/tmux/raw/master/logo/tmux-logo-medium.png)
-[ -e $(dirname $0)/img/barcode.png ] || (cd $(dirname $0)/img/; qrencode --foreground=000000 --background=ffffff -o barcode.png https://github.com/yazgoo/vmux)
+[ -e $script_dir/img/scalameta-logo.png ] || (cd $(dirname $0)/img/; wget https://scalameta.org/metals/img/scalameta-logo.png)
+[ -e $script_dir/img/tmux-logo-medium.png ] || (cd $(dirname $0)/img/; wget https://github.com/tmux/tmux/raw/master/logo/tmux-logo-medium.png)
+[ -e $script_dir/img/barcode.png ] || (cd $(dirname $0)/img/; qrencode --foreground=000000 --background=ffffff -o barcode.png https://github.com/yazgoo/vmux)
 echo "generating conf..."
-original_init_vim="$(dirname $0)/../../docker/init.vim"
+original_init_vim="$script_dir/../../docker/init.vim"
 tmp_init_vim="/tmp/tmp.neovimconf.init.vim"
 (cat "$original_init_vim"
 echo "
@@ -63,10 +78,11 @@ set fillchars+=eob: 
 set fillchars+=vert: 
 set laststatus=0
 set nofoldenable
+set cmdheight=0
 "
 ) > "$tmp_init_vim"
-echo "generating args and markdown"
-mapfile -t < <($(dirname $0)/conf/hooks/list_sessions_names.sh)
+echo "generating args and markdown..."
+mapfile -t < <($script_dir/conf/hooks/list_sessions_names.sh)
 for session in "${MAPFILE[@]}" 
 do
   export _hash=$(echo "$session" | md5sum | cut -d\  -f1)
@@ -77,8 +93,11 @@ echo "adjust terminal size:"
 while true
 do
   l=$(tput lines)
-  echo $l == 25
-  [ $l -eq 25 ] && break
+  echo $l == 26
+  [ $l -eq 26 ] && break
   read
 done
-LANG=C vmux -c $(dirname $0)/conf -s NeovimConf new
+
+export LANG=C
+alias vmux="vmux -c $script_dir/conf -s NeovimConf"
+echo run vmux
