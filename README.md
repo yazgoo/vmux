@@ -10,6 +10,9 @@ Helper to use vim/neovim as a terminal multiplexer
 <table>
 <tr>
 <td>
+<a href=https://www.twitch.tv/videos/1675449848?t=02h59m07s>Neovim conf 2022<a>
+</td>
+<td>
 session switching:
 <br/>
 <a href=https://www.youtube.com/watch?v=TIZZL5dFtQc><img src=https://img.youtube.com/vi/TIZZL5dFtQc/0.jpg width=200/></a>
