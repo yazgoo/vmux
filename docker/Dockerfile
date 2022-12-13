@@ -16,8 +16,8 @@ RUN nvim --headless +PlugInstall +qa
 
 # setup hooks
 RUN mkdir -p /root/.config/vmux/hooks/
-COPY list_sessions_names.sh /root/.config/vmux/hooks/
-COPY session_name.sh /root/.config/vmux/hooks/
+COPY list_sessions_names /root/.config/vmux/hooks/
+COPY session_name /root/.config/vmux/hooks/
 
 # integrate vmux with bash
 RUN echo 'source ~/.local/share/nvim/plugged/vmux/plugin/setup_vmux.sh' >> ~/.bashrc
