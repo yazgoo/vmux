@@ -87,20 +87,26 @@ fn random_image(
     }
 }
 
-fn list_sessions(session_group: Option<String>) -> Result<Vec<String>, Box<dyn Error>> {
-    let session_regx = Regex::new(&format!(
-        ".*vmux-session{}.*",
-        session_group.unwrap_or_else(|| "".to_string())
-    ))?;
+struct Session {
+    name: String,
+    display_name: String,
+}
+
+fn list_sessions(session_group: &Option<String>) -> Result<Vec<Session>, Box<dyn Error>> {
+    let session_regx = Regex::new(&format!(".*{}", session_suffix(&session_group)))?;
     Ok(diss::list_sessions()?
         .into_iter()
         .filter(|x| session_regx.is_match(x))
+        .map(|x| Session {
+            name: x.clone(),
+            display_name: x.replace(&session_suffix(&session_group), ""),
+        })
         .collect())
 }
 
 fn show_session_list(session_group: Option<String>) -> Result<(), Box<dyn Error>> {
-    for session in list_sessions(session_group)? {
-        println!("{}", session);
+    for session in list_sessions(&session_group)? {
+        println!("{}", session.display_name);
     }
     Ok(())
 }
@@ -118,8 +124,13 @@ fn list_sessions_with_baus(
     };
     let cache_file_path = baus::get_cache_file_path(&args)?;
     let mut lines_backup = baus::get_lines_backup(&cache_file_path)?;
-    let sessions_list = list_sessions(session_group)?;
-    let sessions_list = baus::sort(&args, sessions_list, &mut lines_backup, &cache_file_path)?;
+    let sessions_list = list_sessions(&session_group)?;
+    let sessions_list = baus::sort(
+        &args,
+        sessions_list.into_iter().map(|x| x.name).collect(),
+        &mut lines_backup,
+        &cache_file_path,
+    )?;
     let mut sessions_with_previous: Vec<String> = sessions_list
         .clone()
         .into_iter()
@@ -259,7 +270,7 @@ fn enable_mouse() {
 }
 
 fn attach(
-    session: String,
+    session_prefix: String,
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
     session_group: Option<String>,
@@ -267,6 +278,7 @@ fn attach(
     let empty = Vec::new();
     let empty2 = HashMap::new();
     enable_mouse();
+    let session = format!("{}{}", session_prefix, session_suffix(&session_group));
     diss::run(&session, &empty, empty2, escape_key.clone())?;
     selector(
         session,
@@ -403,24 +415,47 @@ fn help() {
     println!("please provide an action (new|attach|list)");
 }
 
+fn session_suffix(session_group: &Option<String>) -> String {
+    format!(
+        "-vmux-session{}",
+        session_group.clone().unwrap_or("".to_string())
+    )
+}
+
+fn sessions_contains_full(sessions: &Vec<Session>, full_name: &String) -> bool {
+    sessions.iter().filter(|x| &x.name == full_name).count() > 0
+}
+
+fn unique_prefix(
+    session_prefix: &String,
+    session_group: &Option<String>,
+) -> Result<String, Box<dyn Error>> {
+    let sessions = list_sessions(session_group)?;
+    if !sessions_contains_full(&sessions, &session_prefix) {
+        Ok(session_prefix.to_string())
+    } else {
+        let mut i = 0;
+        let mut full;
+        loop {
+            full = format!("{}-{}", session_prefix, i);
+            if !sessions_contains_full(&sessions, &full) {
+                break;
+            }
+            i += 1;
+        }
+        Ok(full)
+    }
+}
+
 fn start_session(
     session_prefix: String,
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
     session_group: Option<String>,
 ) -> Result<(), Box<dyn Error>> {
-    let start = SystemTime::now();
-    let since_the_epoch = start
-        .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards");
-
-    let session_suffix = format!(
-        "-vmux-session{}",
-        session_group.clone().unwrap_or("".to_string())
-    );
-    let id = format!("{}-{}", session_prefix, since_the_epoch.as_secs());
+    let id = unique_prefix(&session_prefix, &session_group)?;
     let server_file = format!("/tmp/vim-server-{}", id);
-    let session_name = format!("{}{}", id, session_suffix);
+    let session_name = format!("{}{}", id, session_suffix(&session_group));
     let env_regx = Regex::new(r"^([^=]*)=(.*)$")?;
     let lines: Vec<String> =
         session_name_hook(session_prefix, configuration_directory_path.clone())?;
