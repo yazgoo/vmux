@@ -71,6 +71,19 @@ impl fmt::Display for HookNotFound {
     }
 }
 
+#[derive(Debug, Clone)]
+struct SessionNotFound {
+    display_name: String,
+}
+
+impl Error for SessionNotFound {}
+
+impl fmt::Display for SessionNotFound {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "seession not found {}", self.display_name)
+    }
+}
+
 fn random_image(
     configuration_directory_path: Option<String>,
 ) -> Result<Option<String>, Box<dyn Error>> {
@@ -92,7 +105,7 @@ struct Session {
     display_name: String,
 }
 
-fn list_sessions(session_group: &Option<String>) -> Result<Vec<Session>, Box<dyn Error>> {
+fn list_sessions(session_group: &String) -> Result<Vec<Session>, Box<dyn Error>> {
     let session_regx = Regex::new(&format!(".*{}", session_suffix(&session_group)))?;
     Ok(diss::list_sessions()?
         .into_iter()
@@ -104,16 +117,44 @@ fn list_sessions(session_group: &Option<String>) -> Result<Vec<Session>, Box<dyn
         .collect())
 }
 
-fn show_session_list(session_group: Option<String>) -> Result<(), Box<dyn Error>> {
+fn get_session_full_name(
+    display_name: String,
+    session_group: &String,
+) -> Result<String, Box<dyn Error>> {
+    list_sessions(session_group)?
+        .into_iter()
+        .filter(|x| x.display_name == display_name)
+        .map(|x| x.name)
+        .collect::<Vec<String>>()
+        .get(0)
+        .map(|x| x.clone())
+        .ok_or(Box::new(SessionNotFound { display_name }))
+}
+
+fn show_session_list(session_group: String) -> Result<(), Box<dyn Error>> {
     for session in list_sessions(&session_group)? {
         println!("{}", session.display_name);
     }
     Ok(())
 }
 
+fn get_session_display_name(
+    name: String,
+    session_list: &Vec<Session>,
+) -> Result<String, Box<dyn Error>> {
+    session_list
+        .into_iter()
+        .filter(|x| x.name == name)
+        .map(|x| x.display_name.clone())
+        .collect::<Vec<String>>()
+        .get(0)
+        .map(|x| x.clone())
+        .ok_or(Box::new(SessionNotFound { display_name: name }))
+}
+
 fn list_sessions_with_baus(
     previous_session_name: String,
-    session_group: Option<String>,
+    session_group: String,
 ) -> Result<Vec<String>, Box<dyn Error>> {
     let args = baus::Args {
         name: "vmux".to_string(),
@@ -124,13 +165,19 @@ fn list_sessions_with_baus(
     };
     let cache_file_path = baus::get_cache_file_path(&args)?;
     let mut lines_backup = baus::get_lines_backup(&cache_file_path)?;
-    let sessions_list = list_sessions(&session_group)?;
-    let sessions_list = baus::sort(
-        &args,
-        sessions_list.into_iter().map(|x| x.name).collect(),
-        &mut lines_backup,
-        &cache_file_path,
-    )?;
+    let sessions_list_detailed = list_sessions(&session_group)?;
+    let previous_session_name =
+        get_session_display_name(previous_session_name, &sessions_list_detailed)
+            .ok()
+            .unwrap_or("".to_string());
+    let a = list_sessions(&session_group)?
+        .into_iter()
+        .map(|x| x.name)
+        .collect();
+    let sessions_list = baus::sort(&args, a, &mut lines_backup, &cache_file_path)?
+        .into_iter()
+        .map(|x| get_session_display_name(x, &sessions_list_detailed).unwrap())
+        .collect::<Vec<String>>();
     let mut sessions_with_previous: Vec<String> = sessions_list
         .clone()
         .into_iter()
@@ -254,7 +301,7 @@ fn session_name_hook(
 fn list(
     previous_session_name: String,
     configuration_directory_path: Option<String>,
-    session_group: Option<String>,
+    session_group: String,
 ) -> Result<Vec<String>, Box<dyn Error>> {
     let mut res = list_sessions_with_baus(previous_session_name, session_group)?;
     let hook = list_sessions_name_hook(configuration_directory_path)?;
@@ -273,7 +320,7 @@ fn attach(
     session_prefix: String,
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
-    session_group: Option<String>,
+    session_group: String,
 ) -> Result<(), Box<dyn Error>> {
     let empty = Vec::new();
     let empty2 = HashMap::new();
@@ -292,7 +339,7 @@ fn run_switch_result(
     res: String,
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
-    session_group: Option<String>,
+    session_group: String,
 ) -> Result<(), Box<dyn Error>> {
     let new2_reg = Regex::new(r"^New: ")?;
     if res == "Detach" {
@@ -316,14 +363,9 @@ fn run_switch_result(
             session_group,
         )?;
     } else {
-        let re = Regex::new(".*\t")?;
-        save_with_baus(res.clone())?;
-        attach(
-            re.replace(&res, "").to_string(),
-            escape_key,
-            configuration_directory_path,
-            session_group,
-        )?;
+        let full_name = get_session_full_name(res.clone(), &session_group)?;
+        save_with_baus(full_name.clone())?;
+        attach(res, escape_key, configuration_directory_path, session_group)?;
     }
     Ok(())
 }
@@ -332,7 +374,7 @@ pub fn selector(
     previous_session_name: String,
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
-    session_group: Option<String>,
+    session_group: String,
 ) -> Result<(), Box<dyn Error>> {
     print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
     let lines = list(
@@ -415,11 +457,8 @@ fn help() {
     println!("please provide an action (new|attach|list)");
 }
 
-fn session_suffix(session_group: &Option<String>) -> String {
-    format!(
-        "-vmux-session{}",
-        session_group.clone().unwrap_or("".to_string())
-    )
+fn session_suffix(session_group: &String) -> String {
+    format!("-vmux-session{}", session_group.clone())
 }
 
 fn sessions_contains_full(sessions: &Vec<Session>, full_name: &String) -> bool {
@@ -428,7 +467,7 @@ fn sessions_contains_full(sessions: &Vec<Session>, full_name: &String) -> bool {
 
 fn unique_prefix(
     session_prefix: &String,
-    session_group: &Option<String>,
+    session_group: &String,
 ) -> Result<String, Box<dyn Error>> {
     let sessions = list_sessions(session_group)?;
     if !sessions_contains_full(&sessions, &session_prefix) {
@@ -447,14 +486,24 @@ fn unique_prefix(
     }
 }
 
+fn get_server_file(
+    session_prefix: &String,
+    session_group: &String,
+) -> Result<(String, String), Box<dyn Error>> {
+    let id = unique_prefix(&session_prefix, &session_group)?;
+    Ok((id.clone(), format!("/tmp/vim-server-{}", &id)))
+}
+
 fn start_session(
     session_prefix: String,
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
-    session_group: Option<String>,
+    session_group: String,
 ) -> Result<(), Box<dyn Error>> {
-    let id = unique_prefix(&session_prefix, &session_group)?;
-    let server_file = format!("/tmp/vim-server-{}", id);
+    let (id, server_file) = get_server_file(&session_prefix, &session_group)?;
+    if Path::new(&server_file).exists() {
+        fs::remove_file(&server_file)?;
+    }
     let session_name = format!("{}{}", id, session_suffix(&session_group));
     let env_regx = Regex::new(r"^([^=]*)=(.*)$")?;
     let lines: Vec<String> =
@@ -545,7 +594,7 @@ async fn edit(edited_file_path: &str) -> Result<(), Box<dyn Error>> {
 }
 
 fn run_or_selector(
-    f: impl Fn(String, Option<String>, Option<String>, Option<String>) -> Result<(), Box<dyn Error>>,
+    f: impl Fn(String, Option<String>, Option<String>, String) -> Result<(), Box<dyn Error>>,
     args: Args,
 ) -> Result<(), Box<dyn Error>> {
     match args.command.get(1) {
@@ -576,8 +625,8 @@ struct Args {
     configuration_directory_path: Option<String>,
 
     // name of the group of session
-    #[clap(short, long, value_parser)]
-    session_group: Option<String>,
+    #[clap(short, long, value_parser, default_value = "default")]
+    session_group: String,
 
     // command
     command: Vec<String>,
