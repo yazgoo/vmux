@@ -29,10 +29,18 @@ src=doc/NeovimConf/conf/wallpapers/NeovimConf.png
 width=200/></a>
 </td>
 <td>
-<a href=https://www.youtube.com/watch?v=TIZZL5dFtQc><img src=https://img.youtube.com/vi/TIZZL5dFtQc/0.jpg width=200/></a>
+<a href=https://www.youtube.com/watch?v=TIZZL5dFtQc>
+<img
+title="describes how to switch sessions interactively"
+src=https://img.youtube.com/vi/TIZZL5dFtQc/0.jpg 
+width=200/>
+</a>
 </td>
 <td>
-<a href=https://www.youtube.com/watch?v=CnLlT0Wd_wY><img src=https://img.youtube.com/vi/CnLlT0Wd_wY/0.jpg width=200/></a>
+<a href=https://www.youtube.com/watch?v=CnLlT0Wd_wY>
+<img
+title="how to use vmux CLI and vmux integration within terminal"
+src=https://img.youtube.com/vi/CnLlT0Wd_wY/0.jpg width=200/></a>
 </td>
 </tr>
 </table>
