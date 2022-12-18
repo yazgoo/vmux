@@ -9,18 +9,23 @@ Helper to use vim/neovim as a terminal multiplexer
 
 <table>
 <tr>
+Neovim conf 2022
+<th>
+<tr>
+session switching:
+<th>
+<tr>
+CLI + functionalities inside vim:
+<th>
+</tr>
+<tr>
 <td>
-Neovim conf 2022:<br/>
 <a href=https://www.twitch.tv/videos/1675449848?t=02h59m07s><img src=doc/NeovimConf/conf/wallpapers/NeovimConf.png width=200/></a>
 </td>
 <td>
-session switching:
-<br/>
 <a href=https://www.youtube.com/watch?v=TIZZL5dFtQc><img src=https://img.youtube.com/vi/TIZZL5dFtQc/0.jpg width=200/></a>
 </td>
 <td>
-CLI + functionalities inside vim:
-<br/>
 <a href=https://www.youtube.com/watch?v=CnLlT0Wd_wY><img src=https://img.youtube.com/vi/CnLlT0Wd_wY/0.jpg width=200/></a>
 </td>
 </tr>
