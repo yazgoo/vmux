@@ -23,7 +23,7 @@ CLI + functionalities inside vim
 <td>
 <a href=https://www.twitch.tv/videos/1675449848?t=02h59m07s>
 <img 
-alt="presentation of vmux in Neovim conf 2022.
+title="presentation of vmux in Neovim conf 2022.
 Image extracted from https://www.neovimconf.live"
 src=doc/NeovimConf/conf/wallpapers/NeovimConf.png 
 width=200/></a>
