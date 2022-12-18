@@ -10,7 +10,7 @@ Helper to use vim/neovim as a terminal multiplexer
 <table>
 <tr>
 <th>
-Neovim conf 2022
+Neovim conf '22 presentation
 </th>
 <th>
 session switching
@@ -21,7 +21,12 @@ CLI + functionalities inside vim
 </tr>
 <tr>
 <td>
-<a href=https://www.twitch.tv/videos/1675449848?t=02h59m07s><img src=doc/NeovimConf/conf/wallpapers/NeovimConf.png width=200/></a>
+<a href=https://www.twitch.tv/videos/1675449848?t=02h59m07s>
+<img 
+alt="presentation of vmux in Neovim conf 2022.
+Image extracted from https://www.neovimconf.live"
+src=doc/NeovimConf/conf/wallpapers/NeovimConf.png 
+width=200/></a>
 </td>
 <td>
 <a href=https://www.youtube.com/watch?v=TIZZL5dFtQc><img src=https://img.youtube.com/vi/TIZZL5dFtQc/0.jpg width=200/></a>
