@@ -10,7 +10,7 @@ Helper to use vim/neovim as a terminal multiplexer
 <table>
 <tr>
 <td>
-Neovim conf 2022:
+Neovim conf 2022:<br/>
 <a href=https://www.twitch.tv/videos/1675449848?t=02h59m07s><img src=doc/NeovimConf/conf/wallpapers/NeovimConf.png width=200/></a>
 </td>
 <td>
