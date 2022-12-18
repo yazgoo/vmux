@@ -9,14 +9,15 @@ Helper to use vim/neovim as a terminal multiplexer
 
 <table>
 <tr>
+<th>
 Neovim conf 2022
+</th>
 <th>
-<tr>
-session switching:
+session switching
+</th>
 <th>
-<tr>
-CLI + functionalities inside vim:
-<th>
+CLI + functionalities inside vim
+</th>
 </tr>
 <tr>
 <td>
