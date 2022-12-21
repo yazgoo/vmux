@@ -61,17 +61,6 @@ impl fmt::Display for ConfigDirNotFound {
 }
 
 #[derive(Debug, Clone)]
-struct HookNotFound;
-
-impl Error for HookNotFound {}
-
-impl fmt::Display for HookNotFound {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "hook not found")
-    }
-}
-
-#[derive(Debug, Clone)]
 struct SessionNotFound {
     display_name: String,
 }
@@ -243,7 +232,7 @@ fn vmux_hook_path(
 fn session_hook(
     hook_name: &str,
     configuration_directory_path: &Option<String>,
-) -> Result<PathBuf, Box<dyn Error>> {
+) -> Result<Option<PathBuf>, Box<dyn Error>> {
     let list_session_name_path =
         vmux_hook_path(hook_name, "", configuration_directory_path.clone())?;
     let list_session_name_f = Path::new(&list_session_name_path);
@@ -251,27 +240,31 @@ fn session_hook(
         vmux_hook_path(hook_name, ".sh", configuration_directory_path.clone())?;
     let list_session_name_sh_f = Path::new(&list_session_name_sh_path);
     if list_session_name_f.is_file() {
-        Ok(list_session_name_f.to_path_buf())
+        Ok(Some(list_session_name_f.to_path_buf()))
     } else if list_session_name_sh_f.is_file() {
-        Ok(list_session_name_sh_f.to_path_buf())
+        Ok(Some(list_session_name_sh_f.to_path_buf()))
     } else {
-        Err(Box::new(HookNotFound))
+        Ok(None)
     }
 }
 
 fn list_sessions_name_hook(
     configuration_directory_path: Option<String>,
 ) -> Result<Vec<String>, Box<dyn Error>> {
-    let list_session_name_path =
-        session_hook("list_sessions_names", &configuration_directory_path)?;
-    let list_session_name_f = Path::new(&list_session_name_path);
-    if list_session_name_f.is_file() {
-        let output = Command::new(list_session_name_path).output()?;
-        Ok(output
-            .stdout
-            .lines()
-            .map(|x| format!("New: {}", x.unwrap()))
-            .collect())
+    if let Some(list_session_name_path) =
+        session_hook("list_sessions_names", &configuration_directory_path)?
+    {
+        let list_session_name_f = Path::new(&list_session_name_path);
+        if list_session_name_f.is_file() {
+            let output = Command::new(list_session_name_path).output()?;
+            Ok(output
+                .stdout
+                .lines()
+                .map(|x| format!("New: {}", x.unwrap()))
+                .collect())
+        } else {
+            Ok(vec![])
+        }
     } else {
         Ok(vec![])
     }
@@ -281,21 +274,24 @@ fn session_name_hook(
     session_prefix: String,
     configuration_directory_path: Option<String>,
 ) -> Result<Vec<String>, Box<dyn Error>> {
-    let session_name_path = session_hook("session_name", &configuration_directory_path)?;
-    let res = if Path::new(&session_name_path).is_file() {
-        let output = Command::new(session_name_path)
-            .arg(&session_prefix)
-            .output()?;
-        output
-            .stdout
-            .lines()
-            .map(|x| x.unwrap())
-            .into_iter()
-            .collect()
+    if let Some(session_name_path) = session_hook("session_name", &configuration_directory_path)? {
+        let res = if Path::new(&session_name_path).is_file() {
+            let output = Command::new(session_name_path)
+                .arg(&session_prefix)
+                .output()?;
+            output
+                .stdout
+                .lines()
+                .map(|x| x.unwrap())
+                .into_iter()
+                .collect()
+        } else {
+            vec![]
+        };
+        Ok(res)
     } else {
-        vec![]
-    };
-    Ok(res)
+        Ok(vec![])
+    }
 }
 
 fn list(
