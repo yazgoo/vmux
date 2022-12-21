@@ -548,8 +548,8 @@ fn start_session(
     )
 }
 
-async fn send(command: &str) -> Result<(), Box<dyn Error>> {
-    let vmux_server_file = env::var("vmux_server_file")?;
+async fn send(command: &str, vmux_server_file: Option<String>) -> Result<(), Box<dyn Error>> {
+    let vmux_server_file = vmux_server_file.unwrap_or(env::var("vmux_server_file")?);
     let handler = Dummy::new();
     let path = Path::new(&vmux_server_file);
     let stream = Endpoint::connect(path).await?;
@@ -570,18 +570,18 @@ async fn edit(edited_file_path: &str) -> Result<(), Box<dyn Error>> {
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards");
     let done_file_path = format!("/tmp/vmux_lock_{}", since_the_epoch.as_millis());
-    send(&format!(
-        ":let g:vmux_edited_file_path = \"{}\"",
-        edited_file_path
-    ))
+    send(
+        &format!(":let g:vmux_edited_file_path = \"{}\"", edited_file_path),
+        None,
+    )
     .await?;
-    send(&format!(
-        ":let g:vmux_done_file_path = \"{}\"",
-        done_file_path
-    ))
+    send(
+        &format!(":let g:vmux_done_file_path = \"{}\"", done_file_path),
+        None,
+    )
     .await?;
-    send(&format!(":winc l|split {}", edited_file_path)).await?;
-    send(":call VmuxAddDoneEditingCallback()").await?;
+    send(&format!(":winc l|split {}", edited_file_path), None).await?;
+    send(":call VmuxAddDoneEditingCallback()", None).await?;
     println!("waiting for {} to be created...", done_file_path);
     while !Path::new(&done_file_path).exists() {
         std::thread::sleep(Duration::from_millis(200));
@@ -644,7 +644,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
                 show_session_list(args.session_group)?;
             } else if action == "send" {
                 let command = &args.command[1..].join(" ");
-                send(command).await?;
+                send(command, None).await?;
             } else if action == "edit" {
                 let edited_file_path = &args.command[1..].join(" ");
                 edit(edited_file_path).await?;
