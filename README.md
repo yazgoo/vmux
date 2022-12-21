@@ -24,7 +24,7 @@ CLI + functionalities inside vim
 <a href=https://www.twitch.tv/videos/1675449848?t=02h59m07s>
 <img 
 title="presentation of vmux in Neovim conf 2022.
-Image extracted from https://www.neovimconf.live"
+(Image extracted from https://www.neovimconf.live)"
 src=doc/NeovimConf/conf/wallpapers/NeovimConf.png 
 width=200/></a>
 </td>
@@ -45,28 +45,22 @@ src=https://img.youtube.com/vi/CnLlT0Wd_wY/0.jpg width=200/></a>
 </tr>
 </table>
 
-# test it now with docker
+# docker demo
 
-```bash
-docker run -it yazgoo/vmux:master
-```
-
-see [interactive usage](#interactive-usage) for more info on how to use it.
-
-A full example of actual installation/customization can be found in [Dockerfile](docker/Dockerfile).
+`docker run -it yazgoo/vmux:master` ([more info on how to use it](#interactive-usage),  based on [Dockerfile](docker/Dockerfile)) 
 
 # install 
 
 You will need rust and cargo [installed](https://www.rust-lang.org/tools/install).
 
-Install the following vim plugin (e.g. here with vimplug), with a hook to install vmux crate: 
+Install plugin (e.g. here with [vimplug](https://github.com/junegunn/vim-plug)), with post-update hook to install vmux crate: 
 
-```vimscript
+```vim
 Plug 'yazgoo/vmux', {'do': 'cargo install vmux' }
 ```
 
-Add the following to your `.zshrc` or `.bashrc` (replace `<your_editor>` with vim or nvim (default)).
-For vim you'll need it compiled with `+clientserver` flag:
+Add the following to your `.zshrc` or `.bashrc` (replace `<your_editor>` with vim or nvim (default)).<br/>
+(For vim you'll need it compiled with `+clientserver` flag)
 
 ```bash
 source ~/.config/nvim/plugged/vmux/plugin/setup_vmux.sh <your_editor>
@@ -74,65 +68,54 @@ source ~/.config/nvim/plugged/vmux/plugin/setup_vmux.sh <your_editor>
 
 # usage
 
-## interactive usage
+### interactive usage
 
-See [video demo](https://www.youtube.com/watch?v=TIZZL5dFtQc). `vmux new` will start vmux in interactive mode.
+[video demo](https://www.youtube.com/watch?v=TIZZL5dFtQc)
 
-You'll be prompted to:
+`vmux new` will start vmux in interactive mode. You'll be prompted to:
 
 - create a new session (via `New: ...` (pre-named), or `New` (custom-named))
 - exit (via `Detach`)
 - open an existing session
 
-You can leave current session with `CTRL+g`.
-(you can change default escape key from `CTRL+g` (with `-e a`) to `CTRL+a` ).
+You can leave current session with `CTRL+g`. (you can change default escape key from `CTRL+g` (with `-e a`) to `CTRL+a` ).
 
-## usage within vim / neovim
+### usage within vim/neovim
 
-See [video demo](https://www.youtube.com/watch?v=TIZZL5dFtQc).
+[video demo](https://www.youtube.com/watch?v=TIZZL5dFtQc)
 
 Within vim, vmux provides integration between vim and terminal.
-Run `:help vmux` from within vim for more [in depth help](doc/vmux.txt).
-see [docker/init.vim](docker/init.vim) for an example of configuration.
+Run [`:help vmux`](doc/vmux.txt) from within vim for more info.
+[Here](docker/init.vim) is an example configuration.
 
-## cli usage
+### cli usage
 
-you can also manage sessions from the CLI: 
-
-- `vmux new <session_name>` to create a new session name
-- `vmux list` to list session names
-- `vmux attach <full_session_name>` to attach to a running session (as per `vmux list`)
+- `vmux new <session_name>` creates a new session, 
+- `vmux list` list running sessions,
+- `vmux attach <full_session_name>` attaches to a running session (as per `vmux list`)
+- you can group sessions with `-s` option.
 
 # customizing
 
 For an optimal experience, you should at least add 
 `list_sessions_names` and `session_name` hook files described below.
 
-Both files must be executable (if they are a script, they should have a [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix))).
+Both files must be executable
+(if they are a script, they should have a [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix))).
 
-## session setup
+### list sessions names
 
-You can define a custom way to setup a new session via `~/.config/vmux/hooks/session_name`,
-which takes the session name as argument.
-The script just needs to print environment variables of the form `key=value` (`env` command will do that).
+You can define a list of new session names via `~/.config/vmux/hooks/list_sessions_names`
+The script just needs to output session names one per line, see [this](docker/list_sessions_names) for an example.
+
+### session setup
+
+You can define a custom way to setup a new session via `~/.config/vmux/hooks/session_name`.<br/>
+The script takes the session name as argument and should print environment variables of the form `key=value`.
 
 For example, [this script](docker/session_name) will print the content of `.envrc`
 and set working directory to `~/dev/$1` (via `PWD` line).
 
-## list sessions names
-
-You can define a list of new session names via `~/.config/vmux/hooks/list_sessions_names`
-The script just needs to output session names one by line, see [docker](docker/list_sessions_names) for an example.
-
-## wallpaper
+### wallpaper
 
 You can put images which will be used as wallpapers inside `~/.config/vmux/wallpapers/`.
-
-## crates it relies on
-
-This project relies on the following fundamentals crates:
-
-- wallpapers are displayed via [blockish](https://github.com/yazgoo/blockish/)
-- fuzzy prompting is done via [skim](https://github.com/lotabout/skim/)
-- terminal session management: [diss](https://github.com/yazgoo/diss)
-- historized ordering of selections (BAcked Up Sorter) : [baus](https://github.com/yazgoo/baus)
