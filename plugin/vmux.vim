@@ -21,3 +21,7 @@ function! VmuxTabnew()
   tabnew +terminal | normal i 
 endfunction
 command! VmuxTabnew :call VmuxTabnew()
+
+function! VmuxDetachCallback()
+  split
+endfunction

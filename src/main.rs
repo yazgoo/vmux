@@ -18,9 +18,10 @@ use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
 use std::{error::Error, fmt};
 use tokio::io::{split, WriteHalf};
+use tokio::runtime::Handle;
 use tokio_util::compat::Compat;
 use tokio_util::compat::TokioAsyncReadCompatExt;
-use tokio_util::compat::TokioAsyncWriteCompatExt;
+use tokio_util::compat::TokioAsyncWriteCompatExt; // 1.0.2 // 1.0.2
 
 use rand::seq::IteratorRandom;
 use std::fs;
@@ -313,6 +314,7 @@ fn enable_mouse() {
 }
 
 fn attach(
+    handle: &Handle,
     session_prefix: String,
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
@@ -324,6 +326,7 @@ fn attach(
     let session = format!("{}{}", session_prefix, session_suffix(&session_group));
     diss::run(&session, &empty, empty2, escape_key.clone())?;
     selector(
+        handle,
         session,
         escape_key,
         configuration_directory_path,
@@ -332,6 +335,7 @@ fn attach(
 }
 
 fn run_switch_result(
+    handle: &Handle,
     res: String,
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
@@ -346,6 +350,7 @@ fn run_switch_result(
         std::io::stdin().read_line(&mut line)?;
         trim_newline(&mut line);
         start_session(
+            handle,
             line,
             escape_key,
             configuration_directory_path,
@@ -353,6 +358,7 @@ fn run_switch_result(
         )?;
     } else if new2_reg.is_match(&res) {
         start_session(
+            handle,
             res.replace("New: ", ""),
             escape_key,
             configuration_directory_path,
@@ -361,12 +367,19 @@ fn run_switch_result(
     } else {
         let full_name = get_session_full_name(res.clone(), &session_group)?;
         save_with_baus(full_name.clone())?;
-        attach(res, escape_key, configuration_directory_path, session_group)?;
+        attach(
+            handle,
+            res,
+            escape_key,
+            configuration_directory_path,
+            session_group,
+        )?;
     }
     Ok(())
 }
 
 pub fn selector(
+    handle: &Handle,
     previous_session_name: String,
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
@@ -440,6 +453,7 @@ pub fn selector(
     for item in selected_items.iter() {
         let res = item.output();
         run_switch_result(
+            handle,
             res.to_string(),
             escape_key.clone(),
             configuration_directory_path.clone(),
@@ -491,6 +505,7 @@ fn get_server_file(
 }
 
 fn start_session(
+    handle: &Handle,
     session_prefix: String,
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
@@ -531,7 +546,7 @@ fn start_session(
             "--cmd".to_string(),
             "let g:confirm_quit_nomap = 0".to_string(),
             "--servername".to_string(),
-            server_file,
+            server_file.clone(),
         ]
     };
     env_vars.get("VMUX_ADDITIONAL_ARGUMENTS").map(|args| {
@@ -540,7 +555,9 @@ fn start_session(
     });
     enable_mouse();
     diss::run(&session_name, &command, env_vars, escape_key.clone())?;
+    trigger_in_vim_hook(handle, server_file, "Detach".into())?;
     selector(
+        handle,
         session_name,
         escape_key,
         configuration_directory_path,
@@ -548,7 +565,31 @@ fn start_session(
     )
 }
 
-async fn send(command: &str, vmux_server_file: Option<String>) -> Result<(), Box<dyn Error>> {
+fn trigger_in_vim_hook(
+    handle: &Handle,
+    server_file: String,
+    hook_kind: String,
+) -> Result<(), Box<dyn Error>> {
+    send_sync(
+        handle,
+        format!(":call Vmux{}Callback()", hook_kind),
+        Some(server_file.into()),
+    );
+    Ok(())
+}
+
+fn send_sync(handle: &Handle, command: String, vmux_server_file: Option<String>) {
+    futures::executor::block_on(async {
+        handle
+            .spawn(async move {
+                let _ = send(command, vmux_server_file).await;
+            })
+            .await
+            .expect("Task spawned in Tokio executor panicked")
+    });
+}
+
+async fn send(command: String, vmux_server_file: Option<String>) -> Result<(), Box<dyn Error>> {
     let vmux_server_file = vmux_server_file.unwrap_or(env::var("vmux_server_file")?);
     let handler = Dummy::new();
     let path = Path::new(&vmux_server_file);
@@ -560,7 +601,7 @@ async fn send(command: &str, vmux_server_file: Option<String>) -> Result<(), Box
         handler,
     );
     let _io_handle = tokio::spawn(io);
-    neovim.command(command).await?;
+    neovim.command(&command).await?;
     Ok(())
 }
 
@@ -571,17 +612,17 @@ async fn edit(edited_file_path: &str) -> Result<(), Box<dyn Error>> {
         .expect("Time went backwards");
     let done_file_path = format!("/tmp/vmux_lock_{}", since_the_epoch.as_millis());
     send(
-        &format!(":let g:vmux_edited_file_path = \"{}\"", edited_file_path),
+        format!(":let g:vmux_edited_file_path = \"{}\"", edited_file_path),
         None,
     )
     .await?;
     send(
-        &format!(":let g:vmux_done_file_path = \"{}\"", done_file_path),
+        format!(":let g:vmux_done_file_path = \"{}\"", done_file_path),
         None,
     )
     .await?;
-    send(&format!(":winc l|split {}", edited_file_path), None).await?;
-    send(":call VmuxAddDoneEditingCallback()", None).await?;
+    send(format!(":winc l|split {}", edited_file_path), None).await?;
+    send(":call VmuxAddDoneEditingCallback()".to_string(), None).await?;
     println!("waiting for {} to be created...", done_file_path);
     while !Path::new(&done_file_path).exists() {
         std::thread::sleep(Duration::from_millis(200));
@@ -590,17 +631,20 @@ async fn edit(edited_file_path: &str) -> Result<(), Box<dyn Error>> {
 }
 
 fn run_or_selector(
-    f: impl Fn(String, Option<String>, Option<String>, String) -> Result<(), Box<dyn Error>>,
+    handle: &Handle,
+    f: impl Fn(&Handle, String, Option<String>, Option<String>, String) -> Result<(), Box<dyn Error>>,
     args: Args,
 ) -> Result<(), Box<dyn Error>> {
     match args.command.get(1) {
         Some(session_prefix) => f(
+            handle,
             session_prefix.to_string(),
             args.escape_key,
             args.configuration_directory_path,
             args.session_group,
         ),
         None => selector(
+            handle,
             "".to_string(),
             args.escape_key,
             args.configuration_directory_path,
@@ -630,21 +674,22 @@ struct Args {
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
+    let handle = Handle::current();
     let args = Args::parse();
     let arg1 = args.command.get(0);
     match arg1 {
         Some(action) => {
             if action == "select" {
-                run_or_selector(selector, args)?;
+                run_or_selector(&handle, selector, args)?;
             } else if action == "attach" {
-                run_or_selector(attach, args)?;
+                run_or_selector(&handle, attach, args)?;
             } else if action == "new" {
-                run_or_selector(start_session, args)?;
+                run_or_selector(&handle, start_session, args)?;
             } else if action == "list" {
                 show_session_list(args.session_group)?;
             } else if action == "send" {
                 let command = &args.command[1..].join(" ");
-                send(command, None).await?;
+                send(command.to_string(), None).await?;
             } else if action == "edit" {
                 let edited_file_path = &args.command[1..].join(" ");
                 edit(edited_file_path).await?;
