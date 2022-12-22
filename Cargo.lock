@@ -1790,6 +1790,7 @@ dependencies = [
  "clap 3.2.23",
  "dirs",
  "diss",
+ "futures 0.3.24",
  "nvim-rs",
  "parity-tokio-ipc",
  "rand 0.8.5",

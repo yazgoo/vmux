@@ -26,3 +26,4 @@ tokio-util = { version = "0.7", features = [ "compat" ] }
 dirs = "4.0"
 clap = { version = "3.2", features = ["derive"] }
 diss = "0.2.1"
+futures = "0.3"
