@@ -119,3 +119,19 @@ and set working directory to `~/dev/$1` (via `PWD` line).
 ### wallpaper
 
 You can put images which will be used as wallpapers inside `~/.config/vmux/wallpapers/`.
+
+### detach / attach callbacks
+
+You can define callbacks on attach / detach session.
+For example, to share data between (n)vim instances (including registers content),
+you can use shared data files (`Shada`), by adding in your vim conf: 
+
+```vim
+function! VmuxCustomDetachCallback()
+  wshada
+endfunction
+
+function! VmuxCustomAttachCallback()
+  rshada
+endfunction
+```

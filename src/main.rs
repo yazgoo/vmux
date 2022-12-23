@@ -320,17 +320,37 @@ fn attach(
     configuration_directory_path: Option<String>,
     session_group: String,
 ) -> Result<(), Box<dyn Error>> {
-    let empty = Vec::new();
-    let empty2 = HashMap::new();
-    enable_mouse();
     let session = format!("{}{}", session_prefix, session_suffix(&session_group));
     let (_, server_file) = get_server_file(&session_prefix, &session_group)?;
+    run_diss_and_selector(
+        &handle,
+        server_file,
+        &session,
+        &Vec::new(),
+        HashMap::new(),
+        escape_key.clone(),
+        configuration_directory_path,
+        session_group,
+    )
+}
+
+fn run_diss_and_selector(
+    handle: &Handle,
+    server_file: String,
+    session_name: &str,
+    command: &[String],
+    env: HashMap<String, String>,
+    escape_key: Option<String>,
+    configuration_directory_path: Option<String>,
+    session_group: String,
+) -> Result<(), Box<dyn Error>> {
+    enable_mouse();
     trigger_in_vim_hook(handle, server_file.clone(), "Attach".into())?;
-    diss::run(&session, &empty, empty2, escape_key.clone())?;
+    diss::run(&session_name, &command, env, escape_key.clone())?;
     trigger_in_vim_hook(handle, server_file, "Detach".into())?;
     selector(
         handle,
-        session,
+        session_name.into(),
         escape_key,
         configuration_directory_path,
         session_group,
@@ -556,14 +576,13 @@ fn start_session(
         args.split(" ")
             .for_each(|arg| command.push(arg.to_string()))
     });
-    enable_mouse();
-    trigger_in_vim_hook(handle, server_file.clone(), "Attach".into())?;
-    diss::run(&session_name, &command, env_vars, escape_key.clone())?;
-    trigger_in_vim_hook(handle, server_file, "Detach".into())?;
-    selector(
-        handle,
-        session_name,
-        escape_key,
+    run_diss_and_selector(
+        &handle,
+        server_file,
+        &session_name,
+        &command,
+        env_vars,
+        escape_key.clone(),
         configuration_directory_path,
         session_group,
     )
