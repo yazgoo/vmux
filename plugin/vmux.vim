@@ -23,9 +23,13 @@ endfunction
 command! VmuxTabnew :call VmuxTabnew()
 
 function! VmuxDetachCallback()
-  wshada
+  if exists('*VmuxCustomDetachCallback')
+    call VmuxCustomDetachCallback()
+  endif
 endfunction
 
 function! VmuxAttachCallback()
-  rshada
+  if exists('*VmuxCustomAttachCallback')
+    call VmuxCustomAttachCallback()
+  endif
 endfunction
