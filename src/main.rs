@@ -324,7 +324,10 @@ fn attach(
     let empty2 = HashMap::new();
     enable_mouse();
     let session = format!("{}{}", session_prefix, session_suffix(&session_group));
+    let (_, server_file) = get_server_file(&session_prefix, &session_group)?;
+    trigger_in_vim_hook(handle, server_file.clone(), "Attach".into())?;
     diss::run(&session, &empty, empty2, escape_key.clone())?;
+    trigger_in_vim_hook(handle, server_file, "Detach".into())?;
     selector(
         handle,
         session,
@@ -554,6 +557,7 @@ fn start_session(
             .for_each(|arg| command.push(arg.to_string()))
     });
     enable_mouse();
+    trigger_in_vim_hook(handle, server_file.clone(), "Attach".into())?;
     diss::run(&session_name, &command, env_vars, escape_key.clone())?;
     trigger_in_vim_hook(handle, server_file, "Detach".into())?;
     selector(
@@ -565,11 +569,25 @@ fn start_session(
     )
 }
 
+fn log(string: String) {
+    let mut file = fs::OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open("/tmp/my-file")
+        .unwrap();
+
+    _ = writeln!(file, "{}", string)
+}
+
 fn trigger_in_vim_hook(
     handle: &Handle,
     server_file: String,
     hook_kind: String,
 ) -> Result<(), Box<dyn Error>> {
+    log(format!(
+        "trigger_in_vim_hook {} {}\n",
+        server_file, hook_kind
+    ));
     send_sync(
         handle,
         format!(":call Vmux{}Callback()", hook_kind),
@@ -579,18 +597,15 @@ fn trigger_in_vim_hook(
 }
 
 fn send_sync(handle: &Handle, command: String, vmux_server_file: Option<String>) {
-    futures::executor::block_on(async {
-        handle
-            .spawn(async move {
-                let _ = send(command, vmux_server_file).await;
-            })
-            .await
-            .expect("Task spawned in Tokio executor panicked")
+    let join_handle = handle.spawn(async move {
+        let _ = send(command, vmux_server_file.clone()).await;
     });
+    futures::executor::block_on(join_handle).unwrap();
 }
 
 async fn send(command: String, vmux_server_file: Option<String>) -> Result<(), Box<dyn Error>> {
-    let vmux_server_file = vmux_server_file.unwrap_or(env::var("vmux_server_file")?);
+    let vmux_server_file =
+        vmux_server_file.unwrap_or_else(|| env::var("vmux_server_file").unwrap());
     let handler = Dummy::new();
     let path = Path::new(&vmux_server_file);
     let stream = Endpoint::connect(path).await?;

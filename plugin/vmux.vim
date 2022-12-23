@@ -23,5 +23,9 @@ endfunction
 command! VmuxTabnew :call VmuxTabnew()
 
 function! VmuxDetachCallback()
-  split
+  wshada
+endfunction
+
+function! VmuxAttachCallback()
+  rshada
 endfunction
