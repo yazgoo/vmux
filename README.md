@@ -135,3 +135,9 @@ function! VmuxCustomAttachCallback()
   rshada
 endfunction
 ```
+
+you can get info about current session via the following env var:
+
+- `VMUX_SESSION_GROUP`: session group name
+- `VMUX_DISPLAY_NAME`: session display name within current group
+- `VMUX_SESSION_NAME`: full session name used to identify the session uniquely
