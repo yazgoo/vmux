@@ -591,25 +591,11 @@ fn start_session(
     )
 }
 
-fn log(string: String) {
-    let mut file = fs::OpenOptions::new()
-        .write(true)
-        .append(true)
-        .open("/tmp/my-file")
-        .unwrap();
-
-    _ = writeln!(file, "{}", string)
-}
-
 fn trigger_in_vim_hook(
     handle: &Handle,
     server_file: String,
     hook_kind: String,
 ) -> Result<(), Box<dyn Error>> {
-    log(format!(
-        "trigger_in_vim_hook {} {}\n",
-        server_file, hook_kind
-    ));
     send_sync(
         handle,
         format!(":call Vmux{}Callback()", hook_kind),
