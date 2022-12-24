@@ -553,6 +553,9 @@ fn start_session(
         })
         .collect();
     env_vars.insert("vmux_server_file".to_string(), server_file.clone());
+    env_vars.insert("VMUX_SESSION_NAME".to_string(), session_name.clone());
+    env_vars.insert("VMUX_SESSION_GROUP".to_string(), session_group.clone());
+    env_vars.insert("VMUX_SESSION_DISPLAY_NAME".to_string(), id.clone());
 
     let vmux_editor = env::var("VMUX_EDITOR").unwrap_or("nvim".to_string());
     let mut command = if vmux_editor.contains("nvim") {
