@@ -493,9 +493,9 @@ dependencies = [
 
 [[package]]
 name = "diss"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52241a450271b88508841d4497c45f7ff4d49361161aeddd3e403c4a074ba3b8"
+checksum = "64d238ce73301c9e83c1eccfa7673d734adfceb499474f69cc0fce97a7ca7f7c"
 dependencies = [
  "anyhow",
  "bincode",
@@ -507,7 +507,7 @@ dependencies = [
  "rand 0.8.5",
  "serde",
  "signal-hook",
- "termion 1.5.6",
+ "termion",
  "timeout-readwrite",
  "whoami",
 ]
@@ -1541,18 +1541,6 @@ dependencies = [
 
 [[package]]
 name = "termion"
-version = "1.5.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "077185e2eac69c3f8379a4298e1e07cd36beb962290d4a51199acf0fdc10607e"
-dependencies = [
- "libc",
- "numtoa",
- "redox_syscall",
- "redox_termios",
-]
-
-[[package]]
-name = "termion"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "659c1f379f3408c7e5e84c7d0da6d93404e3800b6b9d063ba24436419302ec90"
@@ -1782,7 +1770,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "vmux"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "atty",
  "baus",
@@ -1796,7 +1784,7 @@ dependencies = [
  "rand 0.8.5",
  "regex",
  "skim",
- "termion 2.0.1",
+ "termion",
  "tokio",
  "tokio-util 0.7.3",
 ]
