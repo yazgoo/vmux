@@ -69,7 +69,7 @@ Install the plugin with post-update hook to install vmux crate:
   <br>
   
   ```lua
-  { 'yzgoo/vmux', build = 'cargo install vmux' }
+  { 'yazgoo/vmux', build = 'cargo install vmux' }
   ```
 </details>
 
