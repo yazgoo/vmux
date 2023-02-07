@@ -111,6 +111,12 @@ Add the following to your `.zshrc` or `.bashrc` (replace `<your_editor>` with vi
   ```
 </details>
 
+**Note**: if you are using Fish shell, consider using [bass](https://github.com/edc/bass) with the following added to `config.fish`:
+
+```fish
+bass source <path-to-setup_vmux.sh> <your_editor>
+```
+
 # usage
 
 ### interactive usage
