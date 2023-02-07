@@ -53,18 +53,63 @@ src=https://img.youtube.com/vi/CnLlT0Wd_wY/0.jpg width=200/></a>
 
 You will need rust and cargo [installed](https://www.rust-lang.org/tools/install).
 
-Install plugin (e.g. here with [vimplug](https://github.com/junegunn/vim-plug)), with post-update hook to install vmux crate: 
+Install the plugin with post-update hook to install vmux crate:
 
-```vim
-Plug 'yazgoo/vmux', {'do': 'cargo install vmux' }
-```
+<details>
+  <summary>with vim-plug</summary>
+  <br>
+  
+  ```vim
+  Plug 'yazgoo/vmux', {'do': 'cargo install vmux' }
+  ```
+</details>
+
+<details>
+  <summary>with lazy.nvim</summary>
+  <br>
+  
+  ```lua
+  { 'yzgoo/vmux', build = 'cargo install vmux' }
+  ```
+</details>
+
+<details>
+  <summary>with packer.nvim</summary>
+  <br>
+  
+  ```lua
+  use { 'yzgoo/vmux', run = 'cargo install vmux' }
+  ```
+</details> 
 
 Add the following to your `.zshrc` or `.bashrc` (replace `<your_editor>` with vim or nvim (default)).<br/>
 (For vim you'll need it compiled with `+clientserver` flag)
 
-```bash
-source ~/.config/nvim/plugged/vmux/plugin/setup_vmux.sh <your_editor>
-```
+<details>
+  <summary>with vim-plug</summary>
+  <br>
+  
+  ```bash
+  source ~/.config/nvim/plugged/vmux/plugin/setup_vmux.sh <your_editor>
+  ```
+</details>
+  
+<details>
+  <summary>with lazy.nvim</summary>
+  <br>
+  
+  ```bash
+  source ~/.local/share/nvim/lazy/vmux/plugin/setup_vmux.sh <your_editor>
+  ```
+</details>
+<details>
+  <summary>with packer.nvim</summary>
+  <br>
+  
+  ```bash
+  source ~/.local/share/nvim/site/pack/packer/start/vmux/plugin/setup_vmux.sh <your_editor>
+  ```
+</details>
 
 # usage
 
