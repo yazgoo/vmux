@@ -95,21 +95,27 @@ struct Session {
     display_name: String,
 }
 
-fn list_sessions(session_group: &String) -> Result<Vec<Session>, Box<dyn Error>> {
-    let session_regx = Regex::new(&format!(".*{}", session_suffix(&session_group)))?;
+fn list_sessions(session_group: &str) -> Result<Vec<Session>, Box<dyn Error>> {
+    let session_regx = Regex::new(&format!(".*{}", session_suffix(session_group)))?;
     Ok(diss::list_sessions()?
         .into_iter()
         .filter(|x| session_regx.is_match(x))
         .map(|x| Session {
             name: x.clone(),
-            display_name: x.replace(&session_suffix(&session_group), ""),
+            display_name: x.replace(&session_suffix(session_group), ""),
         })
         .collect())
 }
 
+fn get_session_not_found(display_name: &str) -> Box<dyn Error> {
+    Box::new(SessionNotFound {
+        display_name: display_name.to_string(),
+    })
+}
+
 fn get_session_full_name(
     display_name: String,
-    session_group: &String,
+    session_group: &str,
 ) -> Result<String, Box<dyn Error>> {
     list_sessions(session_group)?
         .into_iter()
@@ -117,8 +123,8 @@ fn get_session_full_name(
         .map(|x| x.name)
         .collect::<Vec<String>>()
         .get(0)
-        .map(|x| x.clone())
-        .ok_or(Box::new(SessionNotFound { display_name }))
+        .cloned()
+        .ok_or_else(|| get_session_not_found(&display_name))
 }
 
 fn show_session_list(session_group: String) -> Result<(), Box<dyn Error>> {
@@ -130,16 +136,16 @@ fn show_session_list(session_group: String) -> Result<(), Box<dyn Error>> {
 
 fn get_session_display_name(
     name: String,
-    session_list: &Vec<Session>,
+    session_list: &[Session],
 ) -> Result<String, Box<dyn Error>> {
     session_list
-        .into_iter()
+        .iter()
         .filter(|x| x.name == name)
         .map(|x| x.display_name.clone())
         .collect::<Vec<String>>()
         .get(0)
-        .map(|x| x.clone())
-        .ok_or(Box::new(SessionNotFound { display_name: name }))
+        .cloned()
+        .ok_or_else(|| get_session_not_found(&name))
 }
 
 fn list_sessions_with_baus(
@@ -158,8 +164,7 @@ fn list_sessions_with_baus(
     let sessions_list_detailed = list_sessions(&session_group)?;
     let previous_session_name =
         get_session_display_name(previous_session_name, &sessions_list_detailed)
-            .ok()
-            .unwrap_or("".to_string());
+            .ok().unwrap_or_default();
     let a = list_sessions(&session_group)?
         .into_iter()
         .map(|x| x.name)
@@ -203,7 +208,6 @@ fn config_dir_path(configuration_directory_path: Option<String>) -> Result<Strin
             dirs::config_dir()
                 .ok_or_else(|| Box::new(ConfigDirNotFound))?
                 .to_string_lossy()
-                .to_string()
         )),
     }
 }
@@ -313,24 +317,30 @@ fn enable_mouse() {
     print!("\x1b[?1000h");
 }
 
-fn attach(
-    handle: &Handle,
-    session_prefix: String,
+pub struct DissOptions {
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
     session_group: String,
+}
+
+fn attach(
+    handle: &Handle,
+    session_prefix: String,
+    diss_options: &DissOptions,
 ) -> Result<(), Box<dyn Error>> {
-    let session = format!("{}{}", session_prefix, session_suffix(&session_group));
-    let (_, server_file) = get_server_file(&session_prefix, &session_group)?;
+    let session = format!(
+        "{}{}",
+        session_prefix,
+        session_suffix(&diss_options.session_group)
+    );
+    let (_, server_file) = get_server_file(&session_prefix, &diss_options.session_group)?;
     run_diss_and_selector(
-        &handle,
+        handle,
         server_file,
         &session,
         &Vec::new(),
         HashMap::new(),
-        escape_key.clone(),
-        configuration_directory_path,
-        session_group,
+        diss_options,
     )
 }
 
@@ -340,29 +350,19 @@ fn run_diss_and_selector(
     session_name: &str,
     command: &[String],
     env: HashMap<String, String>,
-    escape_key: Option<String>,
-    configuration_directory_path: Option<String>,
-    session_group: String,
+    diss_options: &DissOptions,
 ) -> Result<(), Box<dyn Error>> {
     enable_mouse();
     trigger_in_vim_hook(handle, server_file.clone(), "Attach".into())?;
-    diss::run(&session_name, &command, env, escape_key.clone())?;
+    diss::run(session_name, command, env, diss_options.escape_key.clone())?;
     trigger_in_vim_hook(handle, server_file, "Detach".into())?;
-    selector(
-        handle,
-        session_name.into(),
-        escape_key,
-        configuration_directory_path,
-        session_group,
-    )
+    selector(handle, session_name.into(), diss_options)
 }
 
 fn run_switch_result(
     handle: &Handle,
     res: String,
-    escape_key: Option<String>,
-    configuration_directory_path: Option<String>,
-    session_group: String,
+    diss_options: &DissOptions,
 ) -> Result<(), Box<dyn Error>> {
     let new2_reg = Regex::new(r"^New: ")?;
     if res == "Detach" {
@@ -372,31 +372,13 @@ fn run_switch_result(
         println!("enter session name:");
         std::io::stdin().read_line(&mut line)?;
         trim_newline(&mut line);
-        start_session(
-            handle,
-            line,
-            escape_key,
-            configuration_directory_path,
-            session_group,
-        )?;
+        start_session(handle, line, diss_options)?;
     } else if new2_reg.is_match(&res) {
-        start_session(
-            handle,
-            res.replace("New: ", ""),
-            escape_key,
-            configuration_directory_path,
-            session_group,
-        )?;
+        start_session(handle, res.replace("New: ", ""), diss_options)?;
     } else {
-        let full_name = get_session_full_name(res.clone(), &session_group)?;
-        save_with_baus(full_name.clone())?;
-        attach(
-            handle,
-            res,
-            escape_key,
-            configuration_directory_path,
-            session_group,
-        )?;
+        let full_name = get_session_full_name(res.clone(), &diss_options.session_group)?;
+        save_with_baus(full_name)?;
+        attach(handle, res, diss_options)?;
     }
     Ok(())
 }
@@ -404,15 +386,13 @@ fn run_switch_result(
 pub fn selector(
     handle: &Handle,
     previous_session_name: String,
-    escape_key: Option<String>,
-    configuration_directory_path: Option<String>,
-    session_group: String,
+    diss_options: &DissOptions,
 ) -> Result<(), Box<dyn Error>> {
     print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
     let lines = list(
         previous_session_name,
-        configuration_directory_path.clone(),
-        session_group.clone(),
+        diss_options.configuration_directory_path.clone(),
+        diss_options.session_group.clone(),
     )?;
 
     let s = termion::terminal_size()?;
@@ -454,7 +434,7 @@ pub fn selector(
     options.no_mouse = false;
     let margin = format!("{},{},{},{}", margin_v, margin_r, margin_v, margin_l);
     options.margin = Some(&margin);
-    if let Some(img) = random_image(configuration_directory_path.clone())? {
+    if let Some(img) = random_image(diss_options.configuration_directory_path.clone())? {
         render_image_fitting_terminal(&img)
     }
 
@@ -475,13 +455,7 @@ pub fn selector(
         .unwrap_or_else(Vec::new);
     for item in selected_items.iter() {
         let res = item.output();
-        run_switch_result(
-            handle,
-            res.to_string(),
-            escape_key.clone(),
-            configuration_directory_path.clone(),
-            session_group.clone(),
-        )?;
+        run_switch_result(handle, res.to_string(), diss_options)?;
     }
     Ok(())
 }
@@ -490,20 +464,17 @@ fn help() {
     println!("please provide an action (new|attach|list)");
 }
 
-fn session_suffix(session_group: &String) -> String {
-    format!("-vmux-session{}", session_group.clone())
+fn session_suffix(session_group: &str) -> String {
+    format!("-vmux-session{}", session_group)
 }
 
-fn sessions_contains_full(sessions: &Vec<Session>, full_name: &String) -> bool {
-    sessions.iter().filter(|x| &x.name == full_name).count() > 0
+fn sessions_contains_full(sessions: &[Session], full_name: &str) -> bool {
+    sessions.iter().filter(|x| x.name == full_name).count() > 0
 }
 
-fn unique_prefix(
-    session_prefix: &String,
-    session_group: &String,
-) -> Result<String, Box<dyn Error>> {
+fn unique_prefix(session_prefix: &str, session_group: &str) -> Result<String, Box<dyn Error>> {
     let sessions = list_sessions(session_group)?;
-    if !sessions_contains_full(&sessions, &session_prefix) {
+    if !sessions_contains_full(&sessions, session_prefix) {
         Ok(session_prefix.to_string())
     } else {
         let mut i = 0;
@@ -520,28 +491,28 @@ fn unique_prefix(
 }
 
 fn get_server_file(
-    session_prefix: &String,
-    session_group: &String,
+    session_prefix: &str,
+    session_group: &str,
 ) -> Result<(String, String), Box<dyn Error>> {
-    let id = unique_prefix(&session_prefix, &session_group)?;
+    let id = unique_prefix(session_prefix, session_group)?;
     Ok((id.clone(), format!("/tmp/vim-server-{}", &id)))
 }
 
 fn start_session(
     handle: &Handle,
     session_prefix: String,
-    escape_key: Option<String>,
-    configuration_directory_path: Option<String>,
-    session_group: String,
+    diss_options: &DissOptions,
 ) -> Result<(), Box<dyn Error>> {
-    let (id, server_file) = get_server_file(&session_prefix, &session_group)?;
+    let (id, server_file) = get_server_file(&session_prefix, &diss_options.session_group)?;
     if Path::new(&server_file).exists() {
         fs::remove_file(&server_file)?;
     }
-    let session_name = format!("{}{}", id, session_suffix(&session_group));
+    let session_name = format!("{}{}", id, session_suffix(&diss_options.session_group));
     let env_regx = Regex::new(r"^([^=]*)=(.*)$")?;
-    let lines: Vec<String> =
-        session_name_hook(session_prefix, configuration_directory_path.clone())?;
+    let lines: Vec<String> = session_name_hook(
+        session_prefix,
+        diss_options.configuration_directory_path.clone(),
+    )?;
     let mut env_vars: HashMap<String, String> = lines
         .into_iter()
         .map(|line| {
@@ -554,10 +525,13 @@ fn start_session(
         .collect();
     env_vars.insert("vmux_server_file".to_string(), server_file.clone());
     env_vars.insert("VMUX_SESSION_NAME".to_string(), session_name.clone());
-    env_vars.insert("VMUX_SESSION_GROUP".to_string(), session_group.clone());
-    env_vars.insert("VMUX_SESSION_DISPLAY_NAME".to_string(), id.clone());
+    env_vars.insert(
+        "VMUX_SESSION_GROUP".to_string(),
+        diss_options.session_group.clone(),
+    );
+    env_vars.insert("VMUX_SESSION_DISPLAY_NAME".to_string(), id);
 
-    let vmux_editor = env::var("VMUX_EDITOR").unwrap_or("nvim".to_string());
+    let vmux_editor = env::var("VMUX_EDITOR").unwrap_or_else(|_| "nvim".to_string());
     let mut command = if vmux_editor.contains("nvim") {
         vec![
             vmux_editor,
@@ -575,19 +549,17 @@ fn start_session(
             server_file.clone(),
         ]
     };
-    env_vars.get("VMUX_ADDITIONAL_ARGUMENTS").map(|args| {
-        args.split(" ")
+    if let Some(args) = env_vars.get("VMUX_ADDITIONAL_ARGUMENTS") {
+        args.split(' ')
             .for_each(|arg| command.push(arg.to_string()))
-    });
+    }
     run_diss_and_selector(
-        &handle,
+        handle,
         server_file,
         &session_name,
         &command,
         env_vars,
-        escape_key.clone(),
-        configuration_directory_path,
-        session_group,
+        diss_options,
     )
 }
 
@@ -599,7 +571,7 @@ fn trigger_in_vim_hook(
     send_sync(
         handle,
         format!(":call Vmux{}Callback()", hook_kind),
-        Some(server_file.into()),
+        Some(server_file),
     );
     Ok(())
 }
@@ -655,23 +627,27 @@ async fn edit(edited_file_path: &str) -> Result<(), Box<dyn Error>> {
 
 fn run_or_selector(
     handle: &Handle,
-    f: impl Fn(&Handle, String, Option<String>, Option<String>, String) -> Result<(), Box<dyn Error>>,
+    f: impl Fn(&Handle, String, &DissOptions) -> Result<(), Box<dyn Error>>,
     args: Args,
 ) -> Result<(), Box<dyn Error>> {
     match args.command.get(1) {
         Some(session_prefix) => f(
             handle,
             session_prefix.to_string(),
-            args.escape_key,
-            args.configuration_directory_path,
-            args.session_group,
+            &DissOptions {
+                escape_key: args.escape_key,
+                configuration_directory_path: args.configuration_directory_path,
+                session_group: args.session_group,
+            },
         ),
         None => selector(
             handle,
             "".to_string(),
-            args.escape_key,
-            args.configuration_directory_path,
-            args.session_group,
+            &DissOptions {
+                escape_key: args.escape_key,
+                configuration_directory_path: args.configuration_directory_path,
+                session_group: args.session_group,
+            },
         ),
     }
 }
