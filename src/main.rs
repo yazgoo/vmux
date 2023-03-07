@@ -164,7 +164,8 @@ fn list_sessions_with_baus(
     let sessions_list_detailed = list_sessions(&session_group)?;
     let previous_session_name =
         get_session_display_name(previous_session_name, &sessions_list_detailed)
-            .ok().unwrap_or_default();
+            .ok()
+            .unwrap_or_default();
     let a = list_sessions(&session_group)?
         .into_iter()
         .map(|x| x.name)
@@ -553,6 +554,7 @@ fn start_session(
         args.split(' ')
             .for_each(|arg| command.push(arg.to_string()))
     }
+    save_with_baus(session_name.clone())?;
     run_diss_and_selector(
         handle,
         server_file,
