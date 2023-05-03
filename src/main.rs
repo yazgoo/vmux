@@ -676,7 +676,7 @@ struct Args {
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
     let handle = Handle::current();
-    let args = Args::parse();
+    let mut args = Args::parse();
     let arg1 = args.command.get(0);
     match arg1 {
         Some(action) => {
@@ -698,7 +698,10 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
                 help();
             }
         }
-        None => help(),
+        None => {
+            args.command.insert(0, "new".into());
+            run_or_selector(&handle, start_session, args)?;
+        }
     }
     Ok(())
 }

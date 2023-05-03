@@ -123,7 +123,7 @@ bass source <path-to-setup_vmux.sh> <your_editor>
 
 [video demo](https://www.youtube.com/watch?v=TIZZL5dFtQc)
 
-`vmux new` will start vmux in interactive mode. You'll be prompted to:
+`vmux new` or `vmux` will start vmux in interactive mode. You'll be prompted to:
 
 - create a new session (via `New: ...` (pre-named), or `New` (custom-named))
 - exit (via `Detach`)
