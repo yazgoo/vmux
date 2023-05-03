@@ -13,7 +13,7 @@ edition = "2018"
 
 [dependencies]
 regex = "1"
-blockish = "0.0"
+blockish = "0.1"
 skim = "0.10"
 termion = "2"
 atty = "0.2.14"
@@ -24,6 +24,6 @@ parity-tokio-ipc = "0.9"
 tokio = "1"
 tokio-util = { version = "0.7", features = [ "compat" ] }
 dirs = "4.0"
-clap = { version = "3.2", features = ["derive"] }
+clap = { version = "4.2", features = ["derive"] }
 diss = "0.2.9"
 futures = "0.3"
