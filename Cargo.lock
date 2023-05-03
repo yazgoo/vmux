@@ -553,9 +553,9 @@ dependencies = [
 
 [[package]]
 name = "diss"
-version = "0.2.8"
+version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "060d94a63d28b12a79bdbf2aa72aa486a5253925b0c51e75ceb23daf4ed9cf04"
+checksum = "3ceb60ad44128bdcfadaef082797be3545af33e4a2f7a9e23a129fd2b4650640"
 dependencies = [
  "anyhow",
  "bincode",

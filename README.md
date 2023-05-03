@@ -45,11 +45,6 @@ src=https://img.youtube.com/vi/CnLlT0Wd_wY/0.jpg width=200/></a>
 </tr>
 </table>
 
-# warning
-
-There is a regression in [neovim 0.9.0](https://github.com/neovim/neovim/issues/23411).
-Please use a prior version until this is fixed.
-
 # docker demo
 
 `docker run -it yazgoo/vmux:master` ([more info on how to use it](#interactive-usage),  based on [Dockerfile](docker/Dockerfile)) 
