@@ -1,4 +1,4 @@
-<img src="vmux.png" alt="vmux logo" width="200"/>
+<img src="assets/vmux.png" alt="vmux logo" width="200"/>
 
 [![Discord](https://img.shields.io/badge/discord--blue?logo=discord)](https://discord.gg/F684Y8rYwZ)
 [![Crates.io](https://img.shields.io/crates/v/vmux?style=flat-square)](https://crates.io/crates/vmux)
