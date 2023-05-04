@@ -12,6 +12,7 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
+rust-embed="6.6"
 regex = "1"
 blockish = "0.1"
 skim = "0.10"

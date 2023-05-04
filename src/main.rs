@@ -6,6 +6,7 @@ use nvim_rs::rpc::handler::Dummy;
 use nvim_rs::Neovim;
 use parity_tokio_ipc::{Connection, Endpoint};
 use regex::Regex;
+use rust_embed::RustEmbed;
 use skim::prelude::*;
 use std::collections::HashMap;
 use std::env;
@@ -25,6 +26,10 @@ use tokio_util::compat::TokioAsyncWriteCompatExt; // 1.0.2 // 1.0.2
 
 use rand::seq::IteratorRandom;
 use std::fs;
+
+#[derive(RustEmbed)]
+#[folder = "assets"]
+struct Asset;
 
 #[derive(Debug, Clone)]
 struct Item {
@@ -74,6 +79,26 @@ impl fmt::Display for SessionNotFound {
     }
 }
 
+fn version() -> String {
+    env!("CARGO_PKG_VERSION").to_string()
+}
+
+fn vmux_logo_image() -> Result<Option<String>, Box<dyn Error>> {
+    let path = format!(
+        "/tmp/vmux-{}-b37676e3-288b-4862-a2b4-6a4d754ae391.png",
+        version()
+    );
+    if Path::new(&path).is_file() {
+        Ok(Some(path))
+    } else if let Some(embed) = Asset::get("vmux.png") {
+        fs::write(&path, embed.data)
+            .map(|_| Some(path))
+            .map_err(|e| e.into())
+    } else {
+        Ok(None)
+    }
+}
+
 fn random_image(
     configuration_directory_path: Option<String>,
 ) -> Result<Option<String>, Box<dyn Error>> {
@@ -86,7 +111,7 @@ fn random_image(
             _ => Ok(None),
         }
     } else {
-        Ok(None)
+        vmux_logo_image()
     }
 }
 
