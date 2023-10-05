@@ -2,11 +2,13 @@ extern crate baus;
 extern crate skim;
 use blockish::render_image_fitting_terminal;
 use clap::Parser;
+use log_derive::{logfn, logfn_inputs};
 use nvim_rs::rpc::handler::Dummy;
 use nvim_rs::Neovim;
 use parity_tokio_ipc::{Connection, Endpoint};
 use regex::Regex;
 use rust_embed::RustEmbed;
+use rustyline::DefaultEditor;
 use skim::prelude::*;
 use std::collections::HashMap;
 use std::env;
@@ -46,15 +48,6 @@ impl SkimItem for Item {
     }
 }
 
-fn trim_newline(s: &mut String) {
-    if s.ends_with('\n') {
-        s.pop();
-        if s.ends_with('\r') {
-            s.pop();
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 struct ConfigDirNotFound;
 
@@ -79,10 +72,14 @@ impl fmt::Display for SessionNotFound {
     }
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn vmux_logo_image() -> Result<Option<String>, Box<dyn Error>> {
     let path = format!(
         "/tmp/vmux-{}-b37676e3-288b-4862-a2b4-6a4d754ae391.png",
@@ -99,6 +96,8 @@ fn vmux_logo_image() -> Result<Option<String>, Box<dyn Error>> {
     }
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn random_image(
     configuration_directory_path: Option<String>,
 ) -> Result<Option<String>, Box<dyn Error>> {
@@ -120,6 +119,7 @@ struct Session {
     display_name: String,
 }
 
+#[logfn_inputs(Debug)]
 fn list_sessions(session_group: &str) -> Result<Vec<Session>, Box<dyn Error>> {
     let session_regx = Regex::new(&format!(".*{}", session_suffix(session_group)))?;
     Ok(diss::list_sessions()?
@@ -132,12 +132,16 @@ fn list_sessions(session_group: &str) -> Result<Vec<Session>, Box<dyn Error>> {
         .collect())
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn get_session_not_found(display_name: &str) -> Box<dyn Error> {
     Box::new(SessionNotFound {
         display_name: display_name.to_string(),
     })
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn get_session_full_name(
     display_name: String,
     session_group: &str,
@@ -152,6 +156,8 @@ fn get_session_full_name(
         .ok_or_else(|| get_session_not_found(&display_name))
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn show_session_list(session_group: String) -> Result<(), Box<dyn Error>> {
     for session in list_sessions(&session_group)? {
         println!("{}", session.display_name);
@@ -159,6 +165,7 @@ fn show_session_list(session_group: String) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+#[logfn(Debug)]
 fn get_session_display_name(
     name: String,
     session_list: &[Session],
@@ -173,6 +180,8 @@ fn get_session_display_name(
         .ok_or_else(|| get_session_not_found(&name))
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn list_sessions_with_baus(
     previous_session_name: String,
     session_group: String,
@@ -212,6 +221,8 @@ fn list_sessions_with_baus(
     Ok(res)
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn save_with_baus(val: String) -> Result<Vec<String>, Box<dyn Error>> {
     let args = baus::Args {
         name: "vmux".to_string(),
@@ -226,6 +237,8 @@ fn save_with_baus(val: String) -> Result<Vec<String>, Box<dyn Error>> {
     baus::save(&args, res, lines_backup, &cache_file_path)
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn config_dir_path(configuration_directory_path: Option<String>) -> Result<String, Box<dyn Error>> {
     match configuration_directory_path {
         Some(dir) => Ok(dir),
@@ -238,6 +251,8 @@ fn config_dir_path(configuration_directory_path: Option<String>) -> Result<Strin
     }
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn vmux_wallpapers_path(
     configuration_directory_path: Option<String>,
 ) -> Result<String, Box<dyn Error>> {
@@ -247,6 +262,8 @@ fn vmux_wallpapers_path(
     ))
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn vmux_hook_path(
     hook_name: &str,
     hook_extension: &str,
@@ -260,6 +277,8 @@ fn vmux_hook_path(
     ))
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn session_hook(
     hook_name: &str,
     configuration_directory_path: &Option<String>,
@@ -279,6 +298,8 @@ fn session_hook(
     }
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn list_sessions_name_hook(
     configuration_directory_path: Option<String>,
 ) -> Result<Vec<String>, Box<dyn Error>> {
@@ -301,6 +322,8 @@ fn list_sessions_name_hook(
     }
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn session_name_hook(
     session_prefix: String,
     configuration_directory_path: Option<String>,
@@ -325,6 +348,8 @@ fn session_name_hook(
     }
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn list(
     previous_session_name: String,
     configuration_directory_path: Option<String>,
@@ -338,6 +363,8 @@ fn list(
     Ok(res)
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn enable_mouse() {
     // https://stackoverflow.com/questions/5966903/how-to-get-mousemove-and-mouseclick-in-bash
     print!("\x1b[?1000h");
@@ -349,6 +376,7 @@ pub struct DissOptions {
     session_group: String,
 }
 
+#[logfn(Debug)]
 fn attach(
     handle: &Handle,
     session_prefix: String,
@@ -370,6 +398,7 @@ fn attach(
     )
 }
 
+#[logfn(Debug)]
 fn run_diss_and_selector(
     handle: &Handle,
     server_file: String,
@@ -385,6 +414,7 @@ fn run_diss_and_selector(
     selector(handle, session_name.into(), diss_options)
 }
 
+#[logfn(Debug)]
 fn run_switch_result(
     handle: &Handle,
     res: String,
@@ -394,10 +424,8 @@ fn run_switch_result(
     if res == "Detach" {
         println!("done")
     } else if res == "New" {
-        let mut line = String::new();
-        println!("enter session name:");
-        std::io::stdin().read_line(&mut line)?;
-        trim_newline(&mut line);
+        let mut rl = DefaultEditor::new()?;
+        let line = rl.readline("new session name: ".into())?;
         start_session(handle, line, diss_options)?;
     } else if new2_reg.is_match(&res) {
         start_session(handle, res.replace("New: ", ""), diss_options)?;
@@ -486,18 +514,25 @@ pub fn selector(
     Ok(())
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn help() {
     println!("please provide an action (new|attach|list)");
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn session_suffix(session_group: &str) -> String {
     format!("-vmux-session{}", session_group)
 }
 
+#[logfn(Debug)]
 fn sessions_contains_full(sessions: &[Session], full_name: &str) -> bool {
     sessions.iter().filter(|x| x.name == full_name).count() > 0
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn unique_prefix(session_prefix: &str, session_group: &str) -> Result<String, Box<dyn Error>> {
     let sessions = list_sessions(session_group)?;
     if !sessions_contains_full(&sessions, session_prefix) {
@@ -516,6 +551,8 @@ fn unique_prefix(session_prefix: &str, session_group: &str) -> Result<String, Bo
     }
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn get_server_file(
     session_prefix: &str,
     session_group: &str,
@@ -524,6 +561,7 @@ fn get_server_file(
     Ok((id.clone(), format!("/tmp/vim-server-{}", &id)))
 }
 
+#[logfn(Debug)]
 fn start_session(
     handle: &Handle,
     session_prefix: String,
@@ -590,6 +628,8 @@ fn start_session(
     )
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn trigger_in_vim_hook(
     handle: &Handle,
     server_file: String,
@@ -603,6 +643,8 @@ fn trigger_in_vim_hook(
     Ok(())
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
 fn send_sync(handle: &Handle, command: String, vmux_server_file: Option<String>) {
     let join_handle = handle.spawn(async move {
         let _ = send(command, vmux_server_file.clone()).await;
@@ -652,6 +694,7 @@ async fn edit(edited_file_path: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+#[logfn(Debug)]
 fn run_or_selector(
     handle: &Handle,
     f: impl Fn(&Handle, String, &DissOptions) -> Result<(), Box<dyn Error>>,
@@ -686,6 +729,10 @@ struct Args {
     #[clap(short, long, value_parser)]
     escape_key: Option<String>,
 
+    // debug
+    #[clap(short, long, value_parser)]
+    debug: bool,
+
     // configuration directory path
     #[clap(short, long, value_parser)]
     configuration_directory_path: Option<String>,
@@ -698,10 +745,31 @@ struct Args {
     command: Vec<String>,
 }
 
+#[logfn(Debug)]
+#[logfn_inputs(Debug)]
+fn setup_logger() -> Result<(), fern::InitError> {
+    fern::Dispatch::new()
+        .format(|out, message, record| {
+            out.finish(format_args!(
+                "[{}][{}] {}",
+                record.target(),
+                record.level(),
+                message
+            ))
+        })
+        .level(log::LevelFilter::Debug)
+        .chain(fern::log_file("vmux.log")?)
+        .apply()?;
+    Ok(())
+}
+
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>> {
     let handle = Handle::current();
     let mut args = Args::parse();
+    if args.debug {
+        setup_logger()?;
+    }
     let arg1 = args.command.get(0);
     match arg1 {
         Some(action) => {

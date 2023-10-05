@@ -12,6 +12,7 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
+rustyline = "11.0"
 rust-embed="6.6"
 regex = "1"
 blockish = "0.1"
@@ -28,3 +29,6 @@ dirs = "4.0"
 clap = { version = "4.2", features = ["derive"] }
 diss = "0.2.9"
 futures = "0.3"
+log = "0.4"
+log-derive = "0.4"
+fern = "0.6"
