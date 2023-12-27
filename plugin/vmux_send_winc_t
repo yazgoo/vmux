@@ -1,6 +1,6 @@
 caller=$(basename $0)
 # make sure the shell and vim working directory are aligned
-for file in $*
+for file in "$@"
 do
   vmux_send :tcd $PWD
   vmux_send "winc t|${caller:1} $file"
