@@ -18,7 +18,6 @@ regex = "1"
 blockish = "0.1"
 skim = "0.10"
 termion = "2"
-atty = "0.2.14"
 rand = "0.8.0" 
 baus = "0.2.0" 
 nvim-rs = { version = "0.4", features= [ "use_tokio" ] }
