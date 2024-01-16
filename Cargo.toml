@@ -1,6 +1,6 @@
 [package]
 name = "vmux"
-version = "0.1.12"
+version = "0.1.13"
 authors = ["yazgoo"]
 description = "Fuzzy Finder in rust!"
 documentation = "https://docs.rs/vmux"
