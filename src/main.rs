@@ -370,6 +370,24 @@ fn enable_mouse() {
     print!("\x1b[?1000h");
 }
 
+// Neovim enables the kitty keyboard protocol (progressive enhancement). Because
+// vmux detaches from the session instead of quitting neovim, that mode is still
+// active when the switch screen (skim) takes over the terminal, so key
+// press/release escape sequences (e.g. `\x1b[98;1:3u`) leak into the typed input
+// as parasite characters like "b8;1:3lah". Push a no-enhancement entry while the
+// switch screen is up, then pop it to restore neovim's flags before reattaching.
+#[logfn(Debug)]
+fn push_plain_keyboard_protocol() {
+    print!("\x1b[>0u");
+    let _ = std::io::stdout().flush();
+}
+
+#[logfn(Debug)]
+fn pop_keyboard_protocol() {
+    print!("\x1b[<u");
+    let _ = std::io::stdout().flush();
+}
+
 pub struct DissOptions {
     escape_key: Option<String>,
     configuration_directory_path: Option<String>,
@@ -409,6 +427,11 @@ fn run_diss_and_selector(
 ) -> Result<(), Box<dyn Error>> {
     enable_mouse();
     trigger_in_vim_hook(handle, server_file.clone(), "Attach".into())?;
+    log::debug!(
+        "launching diss with session {} and escap keys: {:?}",
+        session_name,
+        &diss_options.escape_key
+    );
     diss::run(session_name, command, env, diss_options.escape_key.clone())?;
     trigger_in_vim_hook(handle, server_file, "Detach".into())?;
     selector(handle, session_name.into(), diss_options)
@@ -504,9 +527,11 @@ pub fn selector(
     }
     drop(tx);
 
+    push_plain_keyboard_protocol();
     let selected_items = Skim::run_with(&options, Some(rx))
         .map(|out| out.selected_items)
         .unwrap_or_else(Vec::new);
+    pop_keyboard_protocol();
     for item in selected_items.iter() {
         let res = item.output();
         run_switch_result(handle, res.to_string(), diss_options)?;
@@ -655,18 +680,33 @@ fn send_sync(handle: &Handle, command: String, vmux_server_file: Option<String>)
 async fn send(command: String, vmux_server_file: Option<String>) -> Result<(), Box<dyn Error>> {
     let vmux_server_file =
         vmux_server_file.unwrap_or_else(|| env::var("vmux_server_file").unwrap());
-    let handler = Dummy::new();
-    let path = Path::new(&vmux_server_file);
-    let stream = Endpoint::connect(path).await?;
-    let (reader, writer) = split(stream);
-    let (neovim, io) = Neovim::<Compat<WriteHalf<Connection>>>::new(
-        reader.compat(),
-        writer.compat_write(),
-        handler,
-    );
-    let _io_handle = tokio::spawn(io);
-    neovim.command(&command).await?;
-    Ok(())
+    // Guard against a stale or unresponsive nvim server socket: connecting to /
+    // sending on it can otherwise hang forever, freezing vmux when (re)attaching.
+    match tokio::time::timeout(Duration::from_secs(2), async {
+        let handler = Dummy::new();
+        let path = Path::new(&vmux_server_file);
+        let stream = Endpoint::connect(path).await?;
+        let (reader, writer) = split(stream);
+        let (neovim, io) = Neovim::<Compat<WriteHalf<Connection>>>::new(
+            reader.compat(),
+            writer.compat_write(),
+            handler,
+        );
+        let _io_handle = tokio::spawn(io);
+        neovim.command(&command).await?;
+        Ok::<(), Box<dyn Error>>(())
+    })
+    .await
+    {
+        Ok(res) => res,
+        Err(_) => {
+            log::debug!(
+                "timed out sending command to nvim server {}",
+                vmux_server_file
+            );
+            Ok(())
+        }
+    }
 }
 
 async fn edit(edited_file_path: &str) -> Result<(), Box<dyn Error>> {

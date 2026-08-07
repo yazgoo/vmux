@@ -26,7 +26,7 @@ tokio = "1"
 tokio-util = { version = "0.7", features = [ "compat" ] }
 dirs = "4.0"
 clap = { version = "4.2", features = ["derive"] }
-diss = "0.2.10"
+diss = { path = "/home/yazgoo/dev/diss" }
 futures = "0.3"
 log = "0.4"
 log-derive = "0.4"

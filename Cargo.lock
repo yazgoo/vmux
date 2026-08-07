@@ -151,7 +151,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42d2f97a48dcf8b092d1bfed8757fe6207fefd85d68e434d040d43d06aadbfa4"
 dependencies = [
  "clap 3.2.25",
- "dirs",
+ "dirs 4.0.0",
  "miniserde",
 ]
 
@@ -210,12 +210,6 @@ dependencies = [
  "scoped_threadpool",
  "term_size",
 ]
-
-[[package]]
-name = "boxfnonce"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5988cb1d626264ac94100be357308f29ff7cbdd3b36bda27f450a4ee3f713426"
 
 [[package]]
 name = "bumpalo"
@@ -480,11 +474,10 @@ dependencies = [
 
 [[package]]
 name = "daemonize"
-version = "0.4.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70c24513e34f53b640819f0ac9f705b673fcf4006d7aab8778bee72ebfc89815"
+checksum = "ab8bfdaacb3c887a54d41bdf48d3af8873b3f5566469f8ba21b92057509f116e"
 dependencies = [
- "boxfnonce",
  "libc",
 ]
 
@@ -624,7 +617,16 @@ version = "4.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca3aa72a6f96ea37bbc5aa912f6788242832f75369bdfdadcb0e38423f100059"
 dependencies = [
- "dirs-sys",
+ "dirs-sys 0.3.7",
+]
+
+[[package]]
+name = "dirs"
+version = "5.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "44c45a9d03d6676652bcb5e724c7e988de1acad23a711b5217ab9cbecbec2225"
+dependencies = [
+ "dirs-sys 0.4.1",
 ]
 
 [[package]]
@@ -649,6 +651,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "dirs-sys"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "520f05a5cbd335fae5a99ff7a6ab8627577660ee5cfd6a94a6a929b52ff0321c"
+dependencies = [
+ "libc",
+ "option-ext",
+ "redox_users",
+ "windows-sys 0.48.0",
+]
+
+[[package]]
 name = "dirs-sys-next"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -661,19 +675,17 @@ dependencies = [
 
 [[package]]
 name = "diss"
-version = "0.2.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc082aeb1b5939598593c1aee6d8f06ec15fa1ffc2208e3ba84db4246033de41"
+version = "0.3.2"
 dependencies = [
  "anyhow",
  "bincode",
- "clap 3.2.25",
+ "clap 4.4.17",
  "daemonize",
- "dirs",
+ "dirs 5.0.1",
  "fern",
  "log",
  "log-derive",
- "nix 0.25.1",
+ "nix 0.27.1",
  "pty",
  "rand 0.8.5",
  "serde",
@@ -1283,6 +1295,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "nix"
+version = "0.27.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2eb04e9c688eff1c89d72b407f168cf79bb9e867a9d3323ed6c01519eb9cc053"
+dependencies = [
+ "bitflags 2.4.1",
+ "cfg-if",
+ "libc",
+]
+
+[[package]]
 name = "num-traits"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1337,6 +1360,12 @@ name = "once_cell"
 version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
+
+[[package]]
+name = "option-ext"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
 
 [[package]]
 name = "os_str_bytes"
@@ -2188,7 +2217,7 @@ dependencies = [
  "baus",
  "blockish",
  "clap 4.4.17",
- "dirs",
+ "dirs 4.0.0",
  "diss",
  "fern",
  "futures 0.3.30",
